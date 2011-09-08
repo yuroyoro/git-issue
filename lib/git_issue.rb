@@ -13,9 +13,11 @@ require 'fileutils'
 require 'json'
 require 'optparse'
 require 'tempfile'
+require 'active_support'
 
 require File.dirname(__FILE__) + '/git_issue/base'
 require File.dirname(__FILE__) + '/git_issue/redmine'
+require File.dirname(__FILE__) + '/git_issue/github'
 
 module GitIssue
 
@@ -39,8 +41,7 @@ module GitIssue
   END
 
   def self.configure_error(attr_name, example)
-    puts CONFIGURE_MESSAGE % [attr_name, example]
-    exit(1)
+    raise CONFIGURE_MESSAGE % [attr_name, example]
   end
 
 
@@ -50,17 +51,24 @@ module GitIssue
   end
 
   def self.main(argv)
-    its_type = configured_value('type')
-    root     = configured_value('url')
-    apikey   = configured_value('apikey')
+    status = true
 
-    configure_error('type (redmine | github)', "git config issue.type redmine") if its_type.empty?
-    configure_error('url', "git config issue.url http://example.com/redmine")   if root.empty?
-    configure_error('apikey', "git config issue.apikey some_api_key")           if apikey.empty?
+    begin
+      its_type = configured_value('type')
+      apikey   = configured_value('apikey')
 
-    its_klass = its_klass_of(its_type)
-    its_klass.new(root, apikey, ARGV).execute
+      configure_error('type (redmine | github)', "git config issue.type redmine") if its_type.blank?
+      configure_error('apikey', "git config issue.apikey some_api_key")           if apikey.blank?
 
+      its_klass = its_klass_of(its_type)
+      status = its_klass.new(apikey, ARGV).execute || true
+    rescue => e
+      puts e
+      puts e.backtrace.join("\n")
+      status = false
+    end
+
+    exit(status)
   end
 
   def self.its_klass_of(its_type)
@@ -68,12 +76,8 @@ module GitIssue
       when /redmine/i then GitIssue::Redmine
       when /github/i  then GitIssue::Github
       else
-        puts "unknown issue tracker type : #{its_type}"
-        exit(1)
+        raise "unknown issue tracker type : #{its_type}"
     end
   end
-
-
-  # ITS.new(ARGV).execute
 end
 

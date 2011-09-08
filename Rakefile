@@ -11,6 +11,7 @@ begin
     gem.homepage = "http://github.com/yuroyoro/git-issue"
     gem.authors = ["Tomohito Ozaki"]
     gem.add_development_dependency "rspec"
+    gem.add_development_dependency "activesupport"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 rescue LoadError

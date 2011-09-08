@@ -1,6 +1,11 @@
 module GitIssue
 class Redmine < GitIssue::Base
 
+  def initialize(apikey, args, sysout = $stdout, syserr = $stderr)
+    super(apikey, args, sysout, syserr)
+    @url= configured_value('url')
+    configure_error('url', "git config issue.url http://example.com/redmine")  if @root.blank?
+  end
 
   def show(options = {})
     ticket = options[:ticket_id]
@@ -101,38 +106,6 @@ class Redmine < GitIssue::Base
   end
 
   private
-
-  def parse_options(args)
-    config = {}
-    @opt_parse_obj = OptionParser.new{|opts|
-      opts.banner = 'git issue <command> [ticket_id] [<args>]'
-      opts.on("--all",        "-a", "update all paths in the index file "){ config[:all] = true }
-      opts.on("--force",      "-f", "force create branch"){ config[:force] = true }
-      opts.on("--verbose",    "-v", "show issue details"){|v| config[:verbose] = true}
-      opts.on("--journals",   "-h", "show issue journals"){|v| config[:journals] = true}
-      opts.on("--relations",  "-r", "show issue relations tickets"){|v| config[:relations] = true}
-      opts.on("--changesets", "-c", "show issue changesets"){|v| config[:changesets] = true}
-      opts.on("--max-count=VALUE", "-n=VALUE", "maximum number of issues "){|v| config[:max_count] = v.to_i}
-      opts.on("--oneline",          "display short info"){|v| config[:oneline] = true}
-      opts.on("--query=VALUE",'-q', "filter query of listing tickets") {|v| config[:query] = v}
-
-      opts.on("--subject=VALUE", "use the given value to update subject"){|v| config[:subject] = v.to_i}
-      opts.on("--ratio=VALUE", "use the given value to update done-ratio(%)"){|v| config[:done_ratio] = v.to_i}
-      opts.on("--status=VALUE", "use the given value to update issue statues id"){|v| config[:status_id] = v }
-      opts.on("--priority=VALUE", "use the given value to update issue priority id"){|v| config[:priority_id] = v }
-      opts.on("--tracker=VALUE", "use the given value to update tracker id"){|v| config[:tracker_id] = v }
-      opts.on("--assigned_to_id=VALUE", "use the given value to update assigned_to id"){|v| config[:assigned_to_id] = v }
-      opts.on("--category=VALUE", "use the given value to update category id"){|v| config[:category_id] = v }
-      opts.on("--fixed_version=VALUE", "use the given value to update fixed_version id"){|v| config[:fixed_version_id] = v }
-      opts.on("--custom_fields=VALUE", "value should be specifies '<custom_fields_id1>:<value2>,<custom_fields_id2>:<value2>, ...' "){|v| config[:custom_fields] = v }
-
-      opts.on("--notes=VALUE", "add notes to issue"){|v| config[:notes] = v}
-
-      opts.on("--debug", "debug print"){@debug= true }
-    }
-    @opt_parse_obj.parse!(args)
-    [config, args]
-  end
 
   def to_url(*path_list)
     URI.join(@url, path_list.join("/"))
@@ -438,9 +411,27 @@ class Redmine < GitIssue::Base
     end
   end
 
-
   def to_date(d)
     Date.parse(d).strftime('%Y/%m/%d') rescue d
+  end
+
+  def opt_parser
+    opts = super
+    opts.on("--query=VALUE",'-q', "filter query of listing tickets") {|v| @options[:query] = v}
+
+    opts.on("--subject=VALUE", "use the given value to update subject"){|v| @options[:subject] = v.to_i}
+    opts.on("--ratio=VALUE", "use the given value to update done-ratio(%)"){|v| @options[:done_ratio] = v.to_i}
+    opts.on("--status=VALUE", "use the given value to update issue statues id"){|v| @options[:status_id] = v }
+    opts.on("--priority=VALUE", "use the given value to update issue priority id"){|v| @options[:priority_id] = v }
+    opts.on("--tracker=VALUE", "use the given value to update tracker id"){|v| @options[:tracker_id] = v }
+    opts.on("--assigned_to_id=VALUE", "use the given value to update assigned_to id"){|v| @options[:assigned_to_id] = v }
+    opts.on("--category=VALUE", "use the given value to update category id"){|v| @options[:category_id] = v }
+    opts.on("--fixed_version=VALUE", "use the given value to update fixed_version id"){|v| @options[:fixed_version_id] = v }
+    opts.on("--custom_fields=VALUE", "value should be specifies '<custom_fields_id1>:<value2>,<custom_fields_id2>:<value2>, ...' "){|v| @options[:custom_fields] = v }
+
+    opts.on("--notes=VALUE", "add notes to issue"){|v| @options[:notes] = v}
+
+    opts
   end
 
 

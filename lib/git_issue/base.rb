@@ -1,22 +1,31 @@
 module GitIssue
 class Base
-  def initialize(url, apikey, args)
-    @url, @apikey = url, apikey
-    @options, args = parse_options(args)
+  attr_reader :apikey, :command, :command, :tickets, :options
+  attr_accessor :sysout, :syserr
+
+
+  def initialize(apikey, args, sysout = $stdout, syserr = $stderr)
+    @apikey = apikey
+    @sysout, @syserr = sysout, syserr
+    @opt_parse_obj = opt_parser
+    args = parse_options(args)
 
     split_ticket = lambda{|s| s.nil? || s.empty? ? nil : s.split(/,/).map{|v| v.strip.to_i} }
 
+    @tickets = []
     @command = args.shift || :show
     if @command =~ /(\d+,?\s?)+/
       @tickets = split_ticket.call(@command)
       @command = :show
     end
+    @command = @command.to_sym
 
     @command = COMMAND_ALIAS[@command.to_sym] if  COMMAND_ALIAS[@command.to_sym]
 
     exit_with_message("invalid command <#{@command}>") unless COMMAND.include?(@command.to_sym)
 
-    @tickets ||= split_ticket.call(args.shift) || [guess_ticket]
+    @tickets += args.map{|s| split_ticket.call(s)}.flatten.uniq
+    @tickets = [guess_ticket] if @tickets.empty?
   end
 
   def execute
@@ -27,6 +36,7 @@ class Base
         self.send(@command, @options.merge(:ticket_id => ticket))
       end
     end
+    true
   end
 
   def help(options = {})
@@ -55,7 +65,7 @@ class Base
   end
 
   def exit_with_message(msg, status=1)
-    puts msg
+    err msg
     exit(status)
   end
 
@@ -66,6 +76,36 @@ class Base
     end
   end
 
+  def parse_options(args)
+    @options = {}
+    @opt_parse_obj.parse!(args)
+    args
+  end
+
+  def opt_parser
+    OptionParser.new{|opts|
+      opts.banner = 'git issue <command> [ticket_id] [<args>]'
+      opts.on("--all",        "-a", "update all paths in the index file "){ @options[:all] = true }
+      opts.on("--force",      "-f", "force create branch"){ @options[:force] = true }
+      opts.on("--verbose",    "-v", "show issue details"){|v| @options[:verbose] = true}
+      opts.on("--journals",   "-h", "show issue journals"){|v| @options[:journals] = true}
+      opts.on("--relations",  "-r", "show issue relations tickets"){|v| @options[:relations] = true}
+      opts.on("--changesets", "-c", "show issue changesets"){|v| @options[:changesets] = true}
+      opts.on("--max-count=VALUE", "-n=VALUE", "maximum number of issues "){|v| @options[:max_count] = v.to_i}
+      opts.on("--oneline",          "display short info"){|v| @options[:oneline] = true}
+
+      opts.on("--debug", "debug print"){@debug= true }
+    }
+
+  end
+
+  def puts(msg)
+    @sysout.puts msg
+  end
+
+  def err(msg)
+    @syserr.puts msg
+  end
 
 end
 end
