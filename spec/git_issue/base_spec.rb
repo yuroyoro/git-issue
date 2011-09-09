@@ -8,17 +8,16 @@ describe GitIssue::Base do
   end
 
   describe '#initialize' do
-    context 'specified unknown commad ' do
+    context 'specified unknown command ' do
       let(:args) { ["homuhomu", "1234"] }
-      it { lambda{ SampleIts.new("ABCDEFG1234567890", args) }.should raise_error }
+      it { lambda{ SampleIts.new(args) }.should raise_error }
     end
 
-    context 'specified known commad ' do
+    context 'specified known command ' do
       let(:args) { ["show", "1234"] }
 
-      subject{ SampleIts.new("ABCDEFG1234567890", args) }
+      subject{ SampleIts.new(args) }
 
-      its(:apikey) { should == "ABCDEFG1234567890" }
       its(:command) { should == :show }
       its(:tickets) { should == [1234] }
     end
@@ -26,7 +25,7 @@ describe GitIssue::Base do
     context 'args is blank' do
       let (:args) { [] }
 
-      subject { SampleIts.new("ABCDEFG1234567890", args) }
+      subject { SampleIts.new(args) }
 
       its(:command) { should == :show }
       its(:tickets) { should == [6789]}
@@ -35,7 +34,7 @@ describe GitIssue::Base do
     context 'specified number only' do
       let (:args) {["9876"] }
 
-      subject { SampleIts.new("ABCDEFG1234567890", args) }
+      subject { SampleIts.new(args) }
 
       its(:command) { should == :show }
       its(:tickets) { should == [9876]}
@@ -44,7 +43,7 @@ describe GitIssue::Base do
     context 'specified multipul numbers ' do
       let(:args) { ["1234", "5678", "9999"] }
 
-      subject { SampleIts.new("ABCDEFG1234567890", args) }
+      subject { SampleIts.new(args) }
 
       its(:command) { should == :show }
       its(:tickets) { should == [1234, 5678, 9999]}
@@ -55,7 +54,7 @@ describe GitIssue::Base do
 
     context 'one ticket_id specified' do
       let(:args) { ["show", "1234"] }
-      let(:its)  { SampleIts.new("ABCDEFG1234567890", args) }
+      let(:its)  { SampleIts.new(args) }
 
       it { its.should_receive(:show).with(its.options.merge(:ticket_id => 1234)).once }
       after { its.execute }
@@ -63,7 +62,7 @@ describe GitIssue::Base do
 
     context 'three ticket_ids specified' do
       let(:args) { ["show", "1234", "5678", "9999"] }
-      let(:its)  { SampleIts.new("ABCDEFG1234567890", args) }
+      let(:its)  { SampleIts.new(args) }
 
       it {
         its.should_receive(:show).with(its.options.merge(:ticket_id => 1234)).once

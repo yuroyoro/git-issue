@@ -1,15 +1,20 @@
 module GitIssue
 class Redmine < GitIssue::Base
 
-  def initialize(apikey, args, sysout = $stdout, syserr = $stderr)
-    super(apikey, args, sysout, syserr)
-    @url= configured_value('url')
-    configure_error('url', "git config issue.url http://example.com/redmine")  if @root.blank?
+  def initialize(args, options = {})
+    super(args, options)
+
+    @apikey = options[:apikey] || configured_value('apikey')
+    configure_error('apikey', "git config issue.apikey some_api_key") if @apikey.blank?
+
+    @url = options[:url] || configured_value('url')
+    configure_error('url', "git config issue.url http://example.com/redmine")  if @url.blank?
   end
 
   def show(options = {})
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
+
     issue = fetch_issue(ticket, options)
 
     if options[:oneline]
@@ -42,9 +47,8 @@ class Redmine < GitIssue::Base
     a_max = issues.map{|i| mlength(i[5])}.max
 
     issues.each do |i|
-      puts sprintf("#%4d  %s  %s  %s  %s %s  %s",  i[0].to_i, mljust(i[1], p_max), mljust(i[2], t_max), mljust(i[3], s_max),  mljust(i[4], 80), mljust(i[5], a_max), to_date(i[6]))
+      puts sprintf("#%-4d  %s  %s  %s  %s %s  %s",  i[0].to_i, mljust(i[1], p_max), mljust(i[2], t_max), mljust(i[3], s_max),  mljust(i[4], 80), mljust(i[5], a_max), to_date(i[6]))
     end
-
   end
 
   def mine(options = {})
@@ -345,78 +349,12 @@ class Redmine < GitIssue::Base
     RELATIONS_LABEL[rel] || rel
   end
 
-  def mlength(s)
-    width = 0
-    cnt = 0
-    s.split(//u).each{|c| cnt += 1 ;width += 1 if c.length > 1 }
-    cnt + width
-  end
-
-  def mljust(s, n)
-    cnt = 0
-    chars = []
-
-    s.split(//u).each do |c|
-      next if cnt > n
-      chars << c
-      cnt += 1
-      cnt += 1 if c.length > 1
-    end
-    if cnt > n
-      chars.pop
-      cnt -= 1
-      cnt -= 1 if chars.last.length > 1
-    end
-    chars << " " * (n - cnt) if n > cnt
-    chars.join
-  end
-
-  # for 1.8.6...
-  def mktmpdir(prefix_suffix=nil, tmpdir=nil)
-    case prefix_suffix
-    when nil
-      prefix = "d"
-      suffix = ""
-    when String
-      prefix = prefix_suffix
-      suffix = ""
-    when Array
-      prefix = prefix_suffix[0]
-      suffix = prefix_suffix[1]
-    else
-      raise ArgumentError, "unexpected prefix_suffix: #{prefix_suffix.inspect}"
-    end
-    tmpdir ||= Dir.tmpdir
-    t = Time.now.strftime("%Y%m%d")
-    n = nil
-    begin
-      path = "#{tmpdir}/#{prefix}#{t}-#{$$}-#{rand(0x100000000).to_s(36)}"
-      path << "-#{n}" if n
-      path << suffix
-      Dir.mkdir(path, 0700)
-    rescue Errno::EEXIST
-      n ||= 0
-      n += 1
-      retry
-    end
-
-    if block_given?
-      begin
-        yield path
-      ensure
-        FileUtils.remove_entry_secure path
-      end
-    else
-      path
-    end
-  end
-
-  def to_date(d)
-    Date.parse(d).strftime('%Y/%m/%d') rescue d
-  end
 
   def opt_parser
     opts = super
+    opts.on("--journals",   "-j", "show issue journals"){|v| @options[:journals] = true}
+    opts.on("--relations",  "-r", "show issue relations tickets"){|v| @options[:relations] = true}
+    opts.on("--changesets", "-c", "show issue changesets"){|v| @options[:changesets] = true}
     opts.on("--query=VALUE",'-q', "filter query of listing tickets") {|v| @options[:query] = v}
 
     opts.on("--subject=VALUE", "use the given value to update subject"){|v| @options[:subject] = v.to_i}
