@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["Tomohito Ozaki"]
   s.date = %q{2011-09-15}
   s.default_executable = %q{git-issue}
-  s.description = %q{TODO: longer description of your gem}
+  s.description = %q{git extention command for issue tracker system.}
   s.email = %q{ozaki@yuroyoro.com}
   s.executables = ["git-issue"]
   s.extra_rdoc_files = [
@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
-  s.summary = %q{TODO: one-line summary of your gem}
+  s.summary = %q{git extention command for issue tracker system.}
   s.test_files = [
     "spec/git_issue_spec.rb",
      "spec/git_issue/base_spec.rb",

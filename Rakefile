@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "git-issue"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{git extention command for issue tracker system.}
+    gem.description = %Q{git extention command for issue tracker system.}
     gem.email = "ozaki@yuroyoro.com"
     gem.homepage = "http://github.com/yuroyoro/git-issue"
     gem.authors = ["Tomohito Ozaki"]
