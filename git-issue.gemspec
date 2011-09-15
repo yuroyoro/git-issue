@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "bin/git-issue",
+     "git-issue.gemspec",
      "lib/git_issue.rb",
      "lib/git_issue/base.rb",
      "lib/git_issue/github.rb",
