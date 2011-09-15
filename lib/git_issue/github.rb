@@ -54,6 +54,27 @@ class GitIssue::Github < GitIssue::Base
 
   end
 
+  def branch(options = {})
+    ticket = options[:ticket_id]
+    raise 'ticket_id is required.' unless ticket
+
+    branch_name = "ticket/id/#{ticket}"
+
+
+    if options[:force]
+      system "git branch -D #{branch_name}" if options[:force]
+      system "git checkout -b #{branch_name}"
+    else
+      if %x(git branch -l | grep "#{branch_name}").strip.empty?
+        system "git checkout -b #{branch_name}"
+      else
+        system "git checkout #{branch_name}"
+      end
+    end
+
+    show(options)
+  end
+
   private
 
   ROOT = 'https://github.com/api/v2/json'
