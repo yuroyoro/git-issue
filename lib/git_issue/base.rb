@@ -64,7 +64,7 @@ class GitIssue::Base
 
   def find_command(cmd)
     cmd = cmd.to_sym
-    commands.find{|c| c.name == cmd || c.short_name == c }
+    commands.find{|c| c.name == cmd || c.short_name == cmd }
   end
 
   def usage
