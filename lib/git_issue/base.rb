@@ -1,7 +1,7 @@
 class GitIssue::Base
   include GitIssue::Helper
 
-  attr_reader :apikey, :command, :command, :tickets, :options
+  attr_reader :apikey, :command, :tickets, :options
   attr_accessor :sysout, :syserr
 
   def initialize(args, options = {})
@@ -15,16 +15,16 @@ class GitIssue::Base
     split_ticket = lambda{|s| s.nil? || s.empty? ? nil : s.split(/,/).map{|v| v.strip.to_i} }
 
     @tickets = []
-    @command = args.shift || :show
-    if @command =~ /(\d+,?\s?)+/
-      @tickets = split_ticket.call(@command)
-      @command = :show
+    cmd = args.shift || :show
+    if cmd =~ /(\d+,?\s?)+/
+      @tickets = split_ticket.call(cmd)
+      cmd = :show
     end
-    @command = @command.to_sym
+    cmd = cmd.to_sym
 
-    @command = COMMAND_ALIAS[@command.to_sym] if  COMMAND_ALIAS[@command.to_sym]
+    @command = find_command(cmd)
 
-    exit_with_message("invalid command <#{@command}>") unless COMMAND.include?(@command.to_sym)
+    exit_with_message("invalid command <#{cmd}>") unless @command
 
     @tickets += args.map{|s| split_ticket.call(s)}.flatten.uniq
     @tickets = [guess_ticket] if @tickets.empty?
@@ -32,10 +32,10 @@ class GitIssue::Base
 
   def execute
     if @tickets.nil? ||  @tickets.empty?
-      self.send(@command, @options)
+      self.send(@command.name, @options)
     else
       @tickets.each do |ticket|
-        self.send(@command, @options.merge(:ticket_id => ticket))
+        self.send(@command.name, @options.merge(:ticket_id => ticket))
       end
     end
     true
@@ -52,19 +52,19 @@ class GitIssue::Base
 
   def commands
     [
-    Command.new(:show,   :s, 'show given issue summary. if given no id,  geuss id from current branch name.'),
-    Command.new(:list,   :l, 'listing issues.'),
-    Command.new(:mine,   :m, 'display issues that assigned to you.'),
-    Command.new(:commit, :c, 'commit with filling issue subject to messsage.if given no id, geuss id from current branch name.'),
-    Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
-    Command.new(:branch, :b, "checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
-    Command.new(:help,   :h, "show usage.")
+    GitIssue::Command.new(:show,   :s, 'show given issue summary. if given no id,  geuss id from current branch name.'),
+    GitIssue::Command.new(:list,   :l, 'listing issues.'),
+    GitIssue::Command.new(:mine,   :m, 'display issues that assigned to you.'),
+    GitIssue::Command.new(:commit, :c, 'commit with filling issue subject to messsage.if given no id, geuss id from current branch name.'),
+    GitIssue::Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
+    GitIssue::Command.new(:branch, :b, "checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
+    GitIssue::Command.new(:help,   :h, "show usage.")
     ]
   end
 
   def find_command(cmd)
     cmd = cmd.to_sym
-    command.find{|c| c.name == cmd || c.short_name == c }
+    commands.find{|c| c.name == cmd || c.short_name == c }
   end
 
   def usage

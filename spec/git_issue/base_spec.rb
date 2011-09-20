@@ -8,17 +8,17 @@ describe GitIssue::Base do
   end
 
   describe '#initialize' do
-    context 'specified unknown command ' do
+    context 'specified unknown g ' do
       let(:args) { ["homuhomu", "1234"] }
       it { lambda{ SampleIts.new(args) }.should raise_error }
     end
 
-    context 'specified known command ' do
+    context 'specified known g ' do
       let(:args) { ["show", "1234"] }
 
       subject{ SampleIts.new(args) }
 
-      its(:command) { should == :show }
+      it { subject.command.name.should == :show }
       its(:tickets) { should == [1234] }
     end
 
@@ -27,7 +27,7 @@ describe GitIssue::Base do
 
       subject { SampleIts.new(args) }
 
-      its(:command) { should == :show }
+      it { subject.command.name.should == :show }
       its(:tickets) { should == [6789]}
     end
 
@@ -36,7 +36,7 @@ describe GitIssue::Base do
 
       subject { SampleIts.new(args) }
 
-      its(:command) { should == :show }
+      it { subject.command.name.should == :show }
       its(:tickets) { should == [9876]}
     end
 
@@ -45,7 +45,7 @@ describe GitIssue::Base do
 
       subject { SampleIts.new(args) }
 
-      its(:command) { should == :show }
+      it { subject.command.name.should == :show }
       its(:tickets) { should == [1234, 5678, 9999]}
     end
   end

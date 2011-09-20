@@ -25,20 +25,6 @@ module GitIssue
 
   module Helper
 
-
-    COMMAND = [:show, :list, :mine, :commit, :update, :branch, :help]
-    COMMAND_ALIAS = { :s => :show, :l => :list, :m=> :mine, :c => :commit, :u => :update, :b => :branch, :h => :help}
-
-    USAGE = <<-END
-        show    show given issue summary. if given no id, geuss id from current branch name.
-        list    listing issues.
-        mine    display issues that assigned to you.
-        commit  commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
-        update  update issue properties. if given no id, geuss id from current branch name.
-        branch  checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)
-        help    show usage
-    END
-
     CONFIGURE_MESSAGE = <<-END
     please set issue tracker %s.
 

@@ -11,6 +11,11 @@ class Redmine < GitIssue::Base
     configure_error('url', "git config issue.url http://example.com/redmine")  if @url.blank?
   end
 
+  def commands
+    cl = super
+    cl << GitIssue::Command.new(:local, :w, 'listing local branches tickets')
+  end
+
   def show(options = {})
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
@@ -32,23 +37,10 @@ class Redmine < GitIssue::Base
     params.merge!(Hash[*(options[:query].split("&").map{|s| s.split("=") }.flatten)]) if options[:query]
 
     json = fetch_json(url, params)
-
-    issues = json['issues'].map{ |issue|
-      project     = issue['project']['name']     rescue ""
-      tracker     = issue['tracker']['name']     rescue ""
-      status      = issue['status']['name']      rescue ""
-      assigned_to = issue['assigned_to']['name'] rescue ""
-      [issue['id'], project, tracker, status, issue['subject'], assigned_to, issue['updated_on']]
-    }
-
-    p_max = issues.map{|i| mlength(i[1])}.max
-    t_max = issues.map{|i| mlength(i[2])}.max
-    s_max = issues.map{|i| mlength(i[3])}.max
-    a_max = issues.map{|i| mlength(i[5])}.max
-
-    issues.each do |i|
-      puts sprintf("#%-4d  %s  %s  %s  %s %s  %s",  i[0].to_i, mljust(i[1], p_max), mljust(i[2], t_max), mljust(i[3], s_max),  mljust(i[4], 80), mljust(i[5], a_max), to_date(i[6]))
+    format_issue_tables(json['issues']).each do |i|
+      puts i
     end
+
   end
 
   def mine(options = {})
@@ -107,6 +99,17 @@ class Redmine < GitIssue::Base
     end
 
     show(options)
+  end
+
+  def local(option = {})
+
+    brances = %x(git branch).split(/\n/).map{|b| b.scan(/.*ticket\D*(\d+).*/).first }.reject{|r| r.nil?}.map{|r| r.first }
+
+    issues = brances.map{|ticket_id| fetch_issue(ticket_id) }
+
+    format_issue_tables(issues).each do |i|
+      puts i
+    end
   end
 
   private
@@ -336,6 +339,25 @@ class Redmine < GitIssue::Base
     relations.map{|r|
       issue = fetch_issue(r['issue_id'])
       "#{relations_label(r['relation_type'])} #{issue_title(issue)} #{issue['status']['name']} #{issue['start_date']} "
+    }
+  end
+
+  def format_issue_tables(issues_json)
+    issues = issues_json.map{ |issue|
+      project     = issue['project']['name']     rescue ""
+      tracker     = issue['tracker']['name']     rescue ""
+      status      = issue['status']['name']      rescue ""
+      assigned_to = issue['assigned_to']['name'] rescue ""
+      [issue['id'], project, tracker, status, issue['subject'], assigned_to, issue['updated_on']]
+    }
+
+    p_max = issues.map{|i| mlength(i[1])}.max
+    t_max = issues.map{|i| mlength(i[2])}.max
+    s_max = issues.map{|i| mlength(i[3])}.max
+    a_max = issues.map{|i| mlength(i[5])}.max
+
+    issues.map {|i|
+      sprintf("#%-4d  %s  %s  %s  %s %s  %s",  i[0].to_i, mljust(i[1], p_max), mljust(i[2], t_max), mljust(i[3], s_max),  mljust(i[4], 80), mljust(i[5], a_max), to_date(i[6]))
     }
   end
 
