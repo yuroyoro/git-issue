@@ -38,7 +38,7 @@ class Redmine < GitIssue::Base
 
     json = fetch_json(url, params)
 
-    output_issues(json)
+    output_issues(json['issues'])
   end
 
 
@@ -359,13 +359,13 @@ class Redmine < GitIssue::Base
     }
   end
 
-  def output_issues(json)
+  def output_issues(issues)
     if options[:raw_id]
-      json['issues'].each do |i|
+      issues.each do |i|
         puts i['id']
       end
     else
-      format_issue_tables(json['issues']).each do |i|
+      format_issue_tables(issues).each do |i|
         puts i
       end
     end
