@@ -32,16 +32,15 @@ class Redmine < GitIssue::Base
 
   def list(options = {})
     url = to_url('issues')
-    params = {"limit" => options[:max_count] || 20 }
+    params = {"limit" => options[:max_count] || 100 }
     params.merge!("assigned_to_id" => "me") if options[:mine]
     params.merge!(Hash[*(options[:query].split("&").map{|s| s.split("=") }.flatten)]) if options[:query]
 
     json = fetch_json(url, params)
-    format_issue_tables(json['issues']).each do |i|
-      puts i
-    end
 
+    output_issues(json)
   end
+
 
   def mine(options = {})
     list( options.merge(:mine => true))
@@ -107,9 +106,8 @@ class Redmine < GitIssue::Base
 
     issues = brances.map{|ticket_id| fetch_issue(ticket_id) }
 
-    format_issue_tables(issues).each do |i|
-      puts i
-    end
+    output_issues(issues)
+
   end
 
   private
@@ -361,6 +359,17 @@ class Redmine < GitIssue::Base
     }
   end
 
+  def output_issues(json)
+    if options[:raw_id]
+      json['issues'].each do |i|
+        puts i['id']
+      end
+    else
+      format_issue_tables(json['issues']).each do |i|
+        puts i
+      end
+    end
+  end
 
   RELATIONS_LABEL = { "relates"    => "関係している", "duplicates" => "重複している",
     "duplicated" => "重複されている", "blocks" => "ブロックしている",
@@ -377,7 +386,7 @@ class Redmine < GitIssue::Base
     opts.on("--journals",   "-j", "show issue journals"){|v| @options[:journals] = true}
     opts.on("--relations",  "-r", "show issue relations tickets"){|v| @options[:relations] = true}
     opts.on("--changesets", "-c", "show issue changesets"){|v| @options[:changesets] = true}
-    opts.on("--query=VALUE",'-q', "filter query of listing tickets") {|v| @options[:query] = v}
+    opts.on("--query=VALUE",'-q=VALUE', "filter query of listing tickets") {|v| @options[:query] = v}
 
     opts.on("--subject=VALUE", "use the given value to update subject"){|v| @options[:subject] = v.to_i}
     opts.on("--ratio=VALUE", "use the given value to update done-ratio(%)"){|v| @options[:done_ratio] = v.to_i}

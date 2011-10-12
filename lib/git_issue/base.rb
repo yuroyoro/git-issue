@@ -184,6 +184,7 @@ class GitIssue::Base
       opts.on("--verbose",    "-v", "show issue details"){|v| @options[:verbose] = true}
       opts.on("--max-count=VALUE", "-n=VALUE", "maximum number of issues "){|v| @options[:max_count] = v.to_i}
       opts.on("--oneline",          "display short info"){|v| @options[:oneline] = true}
+      opts.on("--raw-id",           "output ticket number only"){|v| @options[:raw_id] = true}
 
       opts.on("--debug", "debug print"){@debug= true }
     }
