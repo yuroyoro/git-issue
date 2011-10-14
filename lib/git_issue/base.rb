@@ -117,7 +117,7 @@ class GitIssue::Base
   BRANCH_NAME_FORMAT = "ticket/id/%s"
 
   def ticket_branch(ticket_id)
-    BRANCH_NAME_FORMAT % s
+    BRANCH_NAME_FORMAT % ticket_id
   end
 
   def current_branch
