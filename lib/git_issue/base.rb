@@ -50,6 +50,23 @@ class GitIssue::Base
     puts @opt_parse_obj.summarize
   end
 
+  def publish(options = {})
+    ticket, branch_name = ticket_and_branch(options)
+    remote = options[:remote] || "origin"
+    system "git push -u #{remote} #{branch_name}"
+  end
+
+  def rebase(options = {})
+    raise '--onto is required.' unless options[:onto]
+    ticket, branch_name = ticket_and_branch(options)
+    onto = options[:onto]
+
+    cb = current_branch
+
+    system "git rebase --onto #{onto} #{onto} #{branch_name}"
+    system "git checkout #{cb}"
+  end
+
   def commands
     [
     GitIssue::Command.new(:show,   :s, 'show given issue summary. if given no id,  geuss id from current branch name.'),
@@ -58,6 +75,10 @@ class GitIssue::Base
     GitIssue::Command.new(:commit, :c, 'commit with filling issue subject to messsage.if given no id, geuss id from current branch name.'),
     GitIssue::Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
     GitIssue::Command.new(:branch, :b, "checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
+
+    GitIssue::Command.new(:publish,:pub, "push branch to remote repository and set upstream "),
+    GitIssue::Command.new(:rebase, :rb,  "rebase branch onto specific newbase"),
+
     GitIssue::Command.new(:help,   :h, "show usage.")
     ]
   end
@@ -93,11 +114,32 @@ class GitIssue::Base
     exit(status)
   end
 
+  BRANCH_NAME_FORMAT = "ticket/id/%s"
+
+  def ticket_branch(ticket_id)
+    BRANCH_NAME_FORMAT % s
+  end
+
+  def current_branch
+    %x(git branch -l | grep "*" | cut -d " " -f 2).strip
+  end
+
   def guess_ticket
-    branch = %x(git branch -l | grep "*" | cut -d " " -f 2).strip
+    branch = current_branch
     if branch =~ %r!id/(\d+)!
       ticket = $1
     end
+  end
+
+  def ticket_and_branch(options)
+    if options[:ticket_id]
+      ticket = options[:ticket_id]
+      branch_name = ticket_branch(ticket)
+    else
+      branch_name = current_branch
+      ticket = guess_ticket
+    end
+    [ticket, branch_name]
   end
 
   def mlength(s)
@@ -185,6 +227,8 @@ class GitIssue::Base
       opts.on("--max-count=VALUE", "-n=VALUE", "maximum number of issues "){|v| @options[:max_count] = v.to_i}
       opts.on("--oneline",          "display short info"){|v| @options[:oneline] = true}
       opts.on("--raw-id",           "output ticket number only"){|v| @options[:raw_id] = true}
+      opts.on("--remote=VALUE",     'on publish, remote repository to push branch ') {|v| @options[:remote] = v}
+      opts.on("--onto=VALUE",       'on rebase, start new branch with HEAD equal to "newbase" ') {|v| @options[:onto] = v}
 
       opts.on("--debug", "debug print"){@debug= true }
     }

@@ -58,8 +58,7 @@ class GitIssue::Github < GitIssue::Base
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
 
-    branch_name = "ticket/id/#{ticket}"
-
+    branch_name = ticket_branch(ticket)
 
     if options[:force]
       system "git branch -D #{branch_name}" if options[:force]
