@@ -13,7 +13,7 @@ require 'fileutils'
 require 'json'
 require 'optparse'
 require 'tempfile'
-require 'active_support'
+require 'active_support/all'
 
 module GitIssue
   class Command
