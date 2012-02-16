@@ -245,7 +245,7 @@ class Redmine < GitIssue::Base
     add_prop_name.call('fixed_version')
 
     # acd custom_fields if it have value.
-    if custom_fields = issue['custom_fields'].reject{|cf| cf['value'].nil? || cf['value'].empty? }
+    if custom_fields = issue[:custom_fields] && custom_fields.reject{|cf| cf['value'].nil? || cf['value'].empty? }
       custom_fields.each do |cf|
         props << [cf['name'], cf['value']]
       end
