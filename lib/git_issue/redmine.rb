@@ -13,7 +13,8 @@ class Redmine < GitIssue::Base
 
   def commands
     cl = super
-    cl << GitIssue::Command.new(:local, :w, 'listing local branches tickets')
+    cl << GitIssue::Command.new(:local, :loc, 'listing local branches tickets')
+    cl << GitIssue::Command.new(:project, :prj, 'listing ticket belongs to sspecified project ')
   end
 
   def show(options = {})
@@ -43,7 +44,7 @@ class Redmine < GitIssue::Base
 
 
   def mine(options = {})
-    list( options.merge(:mine => true))
+    list(options.merge(:mine => true))
   end
 
   def commit(options = {})
@@ -107,6 +108,12 @@ class Redmine < GitIssue::Base
 
     output_issues(issues)
 
+  end
+
+  def project(options = {})
+    project_id = Helper.configured_value('project_id') ||  options[:ticket_id]
+    issues = list(options.merge(:query => "project_id=#{project_id}"))
+    output_issues(issues)
   end
 
   private
