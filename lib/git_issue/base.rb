@@ -150,6 +150,7 @@ class GitIssue::Base
   end
 
   def mljust(s, n)
+    return "" unless s
     cnt = 0
     chars = []
 

@@ -111,9 +111,10 @@ class Redmine < GitIssue::Base
   end
 
   def project(options = {})
-    project_id = Helper.configured_value('project_id') ||  options[:ticket_id]
-    issues = list(options.merge(:query => "project_id=#{project_id}"))
-    output_issues(issues)
+    project_id = Helper.configured_value('project')
+    project_id = options[:ticket_id] if project_id.blank?
+    raise 'project_id is required.' unless project_id
+    list(options.merge(:query => "project_id=#{project_id}"))
   end
 
   private
