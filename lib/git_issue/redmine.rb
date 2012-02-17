@@ -394,9 +394,9 @@ class Redmine < GitIssue::Base
 
   def opt_parser
     opts = super
-    opts.on("--supperss_journals",   "-j", "show issue journals"){|v| @options[:supperss_journals] = true}
-    opts.on("--supperss_relations",  "-r", "show issue relations tickets"){|v| @options[:supperss_relations] = true}
-    opts.on("--supperss_changesets", "-c", "show issue changesets"){|v| @options[:supperss_changesets] = true}
+    opts.on("--supperss_journals",   "-j", "do not show issue journals"){|v| @options[:supperss_journals] = true}
+    opts.on("--supperss_relations",  "-r", "do not show issue relations tickets"){|v| @options[:supperss_relations] = true}
+    opts.on("--supperss_changesets", "-c", "do not show issue changesets"){|v| @options[:supperss_changesets] = true}
     opts.on("--query=VALUE",'-q=VALUE', "filter query of listing tickets") {|v| @options[:query] = v}
 
     opts.on("--subject=VALUE", "use the given value to update subject"){|v| @options[:subject] = v.to_i}
