@@ -7,8 +7,8 @@ now supporse Redmine,Github-issues
 
 ## ScreenShots
 
-<img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue-screenshot-1.png' width='600'/>
-<img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue-screenshot-2.png' width='600'/>
+<img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue_screenshot-1.png' width='600'/>
+<img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue_screenshot-2.png' width='600'/>
 
 ## Instration
 
