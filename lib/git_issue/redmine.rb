@@ -11,6 +11,10 @@ class Redmine < GitIssue::Base
     configure_error('url', "git config issue.url http://example.com/redmine")  if @url.blank?
   end
 
+  def default_cmd
+    Helper.configured_value('project').blank? ? :list : :project
+  end
+
   def commands
     cl = super
     cl << GitIssue::Command.new(:local, :loc, 'listing local branches tickets')

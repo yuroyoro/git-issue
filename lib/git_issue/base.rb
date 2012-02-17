@@ -15,7 +15,8 @@ class GitIssue::Base
     split_ticket = lambda{|s| s.nil? || s.empty? ? nil : s.split(/,/).map{|v| v.strip.to_i} }
 
     @tickets = []
-    cmd = args.shift || :show
+    cmd = args.shift || default_cmd
+
     if cmd =~ /(\d+,?\s?)+/
       @tickets = split_ticket.call(cmd)
       cmd = :show
@@ -28,6 +29,10 @@ class GitIssue::Base
 
     @tickets += args.map{|s| split_ticket.call(s)}.flatten.uniq
     @tickets = [guess_ticket] if @tickets.empty?
+  end
+
+  def default_cmd
+    :list
   end
 
   def execute
