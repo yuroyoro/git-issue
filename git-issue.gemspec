@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{git-issue}
-  s.version = "0.5.3"
+  s.version = "0.6.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tomohito Ozaki"]
@@ -16,16 +16,18 @@ Gem::Specification.new do |s|
   s.executables = ["git-issue"]
   s.extra_rdoc_files = [
     "LICENSE",
-    "README.rdoc"
+    "README.markdown"
   ]
   s.files = [
     ".document",
     "LICENSE",
-    "README.rdoc",
+    "README.markdown",
     "Rakefile",
     "VERSION",
     "bin/git-issue",
     "git-issue.gemspec",
+    "images/git-issue_screenshot-1.png",
+    "images/git-issue_screenshot-2.png",
     "lib/git_issue.rb",
     "lib/git_issue/base.rb",
     "lib/git_issue/github.rb",
