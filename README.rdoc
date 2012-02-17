@@ -4,6 +4,9 @@ git subcommand of browse/modify issue traker's tickets.
 
 now supporse Redmine,Github-issues
 
+<img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue-screenshot-1.png' width='600'/>
+<img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue-screenshot-2.png' width='600'/>
+
 = Instration
 
   $ git clone https://github.com/yuroyoro/git-issue.git

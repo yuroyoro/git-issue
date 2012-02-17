@@ -22,34 +22,40 @@ class GitIssue::Github < GitIssue::Base
     if options[:oneline]
       puts oneline_issue(issue, options)
     else
-      comments = fetch_comments(ticket) if options[:comments]
+      comments = []
+      if issue['comments'].to_i > 0
+        comments = fetch_comments(ticket) unless options[:supperss_comments]
+      end
       puts ""
       puts format_issue(issue, comments, options)
     end
   end
 
   def list(options = {})
-    status = options[:status] || "open"
-    url = to_url("issues", "list", @user, @repo, status)
+    state = options[:state] || "open"
+    url = to_url("repos",@user, @repo, 'issues') + "?state=#{state}"
 
-    json = fetch_json(url)
-    issues = json['issues']
+    issues = fetch_json(url).sort_by{|i| i['number'].to_i}
 
     t_max = issues.map{|i| mlength(i['title'])}.max
     l_max = issues.map{|i| mlength(i['labels'].join(","))}.max
-    u_max = issues.map{|i| mlength(i['user'])}.max
+    u_max = issues.map{|i| mlength(i['user']['login'])}.max
+
+    or_zero = lambda{|v| v.blank? ? "0" : v }
 
     issues.each do |i|
-      puts sprintf("#%-4d  %s  %s  %s  %s comments:%s votes:%s position:%s %s",
+      puts sprintf("#%-4d  %s  %s  %s  %s c:%s v:%s p:%s %s %s",
                    i['number'].to_i,
                    i['state'],
                    mljust(i['title'], t_max),
-                   mljust(i['user'], u_max),
+                   mljust(i['user']['login'], u_max),
                    mljust(i['labels'].join(','), l_max),
-                   i['comments'],
-                   i['votes'],
-                   i['position'],
-                   to_date(i['created_at']))
+                   or_zero.call(i['comments']),
+                   or_zero.call(i['votes']),
+                   or_zero.call(i['position']),
+                   to_date(i['created_at']),
+                   to_date(i['updated_at'])
+                   )
     end
 
   end
@@ -76,13 +82,16 @@ class GitIssue::Github < GitIssue::Base
 
   private
 
-  ROOT = 'https://github.com/api/v2/json'
+  ROOT = 'https://api.github.com/'
   def to_url(*path_list)
     URI.join(ROOT, path_list.join("/"))
   end
 
   def fetch_json(url)
-    json = open(url, {:http_basic_authentication => ["#{@user}/token", @apikey]}) {|io|
+    if @debug
+      puts url
+    end
+    json = open(url, {"Authorizaion" => "#{@user}/token:#{@apikey}"}) {|io|
       JSON.parse(io.read)
     }
 
@@ -97,7 +106,7 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def fetch_issue(ticket_id, params = {})
-    url = to_url("issues", "show", @user, @repo, ticket_id)
+    url = to_url("repos",@user, @repo, 'issues', ticket_id)
     url += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
     json = fetch_json(url)
 
@@ -108,9 +117,8 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def fetch_comments(ticket_id)
-    url = to_url("issues", "comments", @user, @repo, ticket_id)
-    json = fetch_json(url)
-    json['comments'] || []
+    url = to_url("repos",@user, @repo, 'issues', ticket_id, 'comments')
+    json = fetch_json(url) || []
   end
 
   def oneline_issue(issue, options)
@@ -129,6 +137,8 @@ class GitIssue::Github < GitIssue::Base
     props << ['comments', issue['comments']]
     props << ['votes', issue['votes']]
     props << ['position', issue['position']]
+    props << ['milestone', issue['milestone']['title']] unless issue['milestone'].blank?
+
 
     props.each_with_index do |p,n|
       row = sprintf("%s : %s", mljust(p.first, 18), mljust(p.last.to_s, 24))
@@ -164,7 +174,7 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def issue_author(issue)
-    author     = issue['user']
+    author     = issue['user']['login']
     created_at = issue['created_at']
 
     msg = "#{author} opened this issue #{Time.parse(created_at)}"
@@ -182,7 +192,7 @@ class GitIssue::Github < GitIssue::Base
   def format_comment(c, n)
     cmts = []
 
-    cmts << "##{n + 1} - #{c['user']}が#{time_ago_in_words(c['created_at'])}に更新"
+    cmts << "##{n + 1} - #{c['user']['login']}が#{time_ago_in_words(c['created_at'])}に更新"
     cmts << "-" * 78
     cmts +=  c['body'].split("\n").to_a if c['body']
     cmts << ""
@@ -190,8 +200,8 @@ class GitIssue::Github < GitIssue::Base
 
   def opt_parser
     opts = super
-    opts.on("--comments", "-c", "show issue journals"){|v| @options[:comments] = true}
-    opts.on("--status=VALUE",   "Where 'state' is either 'open' or 'closed'"){|v| @options[:status] = v}
+    opts.on("--supperss_comments", "-sc", "show issue journals"){|v| @options[:supperss_comments] = true}
+    opts.on("--state=VALUE",   "Where 'state' is either 'open' or 'closed'"){|v| @options[:state] = v}
 
     opts
   end

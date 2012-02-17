@@ -186,9 +186,9 @@ class Redmine < GitIssue::Base
 
   def issue_includes(options)
     includes = []
-    includes << "journals"   if options[:journals]   || options[:verbose]
-    includes << "changesets" if options[:changesets] || options[:verbose]
-    includes << "relations"  if options[:relations]  || options[:verbose]
+    includes << "journals"   if ! options[:supperss_journals]   || options[:verbose]
+    includes << "changesets" if ! options[:supperss_changesets] || options[:verbose]
+    includes << "relations"  if ! options[:supperss_relations]  || options[:verbose]
     includes.join(",")
   end
 
@@ -265,7 +265,7 @@ class Redmine < GitIssue::Base
     end
 
     # display relations tickets
-    if options[:relations] || options[:verbose]
+    if ! options[:supperss_relations] || options[:verbose]
       relations = issue['relations']
       if relations && !relations.empty?
         msg << "関連するチケット"
@@ -281,7 +281,7 @@ class Redmine < GitIssue::Base
     msg << ""
 
     # display journals
-    if options[:journals] || options[:verbose]
+    if ! options[:supperss_journals] || options[:verbose]
       journals = issue['journals']
       if journals && !journals.empty?
         msg << "履歴"
@@ -293,7 +293,7 @@ class Redmine < GitIssue::Base
     end
 
     # display changesets
-    if options[:changesets] || options[:verbose]
+    if ! options[:supperss_changesets] || options[:verbose]
       changesets = issue['changesets']
       if changesets && !changesets.empty?
         msg << "関係しているリビジョン"
@@ -394,9 +394,9 @@ class Redmine < GitIssue::Base
 
   def opt_parser
     opts = super
-    opts.on("--journals",   "-j", "show issue journals"){|v| @options[:journals] = true}
-    opts.on("--relations",  "-r", "show issue relations tickets"){|v| @options[:relations] = true}
-    opts.on("--changesets", "-c", "show issue changesets"){|v| @options[:changesets] = true}
+    opts.on("--supperss_journals",   "-j", "show issue journals"){|v| @options[:supperss_journals] = true}
+    opts.on("--supperss_relations",  "-r", "show issue relations tickets"){|v| @options[:supperss_relations] = true}
+    opts.on("--supperss_changesets", "-c", "show issue changesets"){|v| @options[:supperss_changesets] = true}
     opts.on("--query=VALUE",'-q=VALUE', "filter query of listing tickets") {|v| @options[:query] = v}
 
     opts.on("--subject=VALUE", "use the given value to update subject"){|v| @options[:subject] = v.to_i}
