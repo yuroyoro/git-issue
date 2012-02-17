@@ -12,37 +12,38 @@ now supporse Redmine,Github-issues
 
 ## Instration
 
-  $ git clone https://github.com/yuroyoro/git-issue.git
-  $ cd git-issue
-  $ rake install jeweler
-  $ rake build
-  $ gem install pkg/git-issue-<version>.gem
+    $ git clone https://github.com/yuroyoro/git-issue.git
+    $ cd git-issue
+    $ rake install jeweler
+    $ rake build
+    $ gem install pkg/git-issue-<version>.gem
 
 ## Configuration
 
 set type of issue traking system(redmine or github)
 
-  $ git config issue.type redmine
+    $ git config issue.type redmine  
 
 set url of issue traking system's api endopoint.
 
-  $ git config issue.url http://redmine.example.com
+    $ git config issue.url http://redmine.example.com
 
 set api-key for accessing issue traking system.
 
-  $ git config issue.apikey FWeaj3I9laei03A....
+    $ git config issue.apikey FWeaj3I9laei03A....
 
 set repository name if using github.
 
-  $ git config issue.repo gitterb
+    $ git config issue.repo gitterb
 
 set your account name if using github.
 
-  $ git config issue.user yuroyoro
+    $ git config issue.user yuroyoro
 
 ## Usage(Redmine)
 
-  git issue <command> [ticket_id] [<args>]
+    git issue <command> [ticket_id] [<args>]
+    
     Commnads:
       show     s show given issue summary. if given no id,  geuss id from current branch name.
       list     l listing issues.
@@ -83,7 +84,8 @@ set your account name if using github.
 
 ## Usage(Redmine)
 
-  git issue <command> [ticket_id] [<args>]
+    git issue <command> [ticket_id] [<args>]
+    
     Commnads:
       show     s show given issue summary. if given no id,  geuss id from current branch name.
       list     l listing issues.
