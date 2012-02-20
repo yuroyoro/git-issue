@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 module GitIssue
 class GitIssue::Github < GitIssue::Base
   def initialize(args, options = {})
