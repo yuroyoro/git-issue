@@ -41,6 +41,11 @@ module GitIssue
       res.strip
     end
 
+    def global_configured_value(name)
+      res = `git config --global #{name}`
+      res.strip
+    end
+
     def its_klass_of(its_type)
       case its_type
         when /redmine/i then GitIssue::Redmine
@@ -50,7 +55,7 @@ module GitIssue
       end
     end
 
-    module_function :configured_value, :configure_error, :its_klass_of
+    module_function :configured_value, :global_configured_value, :configure_error, :its_klass_of
   end
 
   def self.main(argv)
@@ -59,6 +64,15 @@ module GitIssue
     begin
       its_type = Helper.configured_value('type')
       apikey   = Helper.configured_value('apikey')
+
+      # Use global config for hub
+      if its_type.blank?
+        github_user = Helper.global_configured_value('github.user')
+        unless github_user.blank?
+          its_type = 'github'
+          apikey   = Helper.global_configured_value('github.token')
+        end
+      end
 
       Helper.configure_error('type (redmine | github)', "git config issue.type redmine") if its_type.blank?
       Helper.configure_error('apikey', "git config issue.apikey some_api_key")           if apikey.blank?
