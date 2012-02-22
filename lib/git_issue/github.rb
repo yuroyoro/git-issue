@@ -6,12 +6,14 @@ class GitIssue::Github < GitIssue::Base
     super(args, options)
 
     @apikey = options[:apikey] || configured_value('apikey')
+    @apikey = global_configured_value('github.token') if @apikey.blank?
     configure_error('apikey', "git config issue.apikey some_api_key") if @apikey.blank?
 
     @repo = options[:repo] || configured_value('repo')
     configure_error('repo', "git config issue.repo git-issue")  if @repo.blank?
 
     @user = options[:user] || configured_value('user')
+    @user = global_configured_value('github.user') if @user.blank?
     configure_error('user', "git config issue.user yuroyoro")  if @user.blank?
 
   end
