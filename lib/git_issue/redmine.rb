@@ -76,7 +76,7 @@ class Redmine < GitIssue::Base
 
     url = to_url('issues')
 
-    json = post_issue(url, json)
+    json = post_json(url, json, options)
     puts "created issue #{oneline_issue(json["issue"])}"
   end
 
@@ -88,7 +88,7 @@ class Redmine < GitIssue::Base
     json = build_issue_json(options, property_names)
 
     url = to_url('issues', ticket)
-    put_issue(url, json)
+    put_json(url, json, options)
     issue = fetch_issue(ticket)
     puts "updated issue #{oneline_issue(issue)}"
   end
@@ -162,21 +162,16 @@ class Redmine < GitIssue::Base
     issue
   end
 
-  def post_issue(url, json, params = {})
-    response = post_json(url, json, params, :post)
+  def post_json(url, json, options, params = {})
+    response = send_json(url, json, options, params, :post)
     JSON.parse(response.body) if response_success?(response)
   end
 
-  def put_issue(url, json, params = {})
-    post_json(url, json, params, :put)
+  def put_json(url, json, options, params = {})
+    send_json(url, json, options, params, :put)
   end
 
-  def response_success?(response)
-    code = response.code.to_i
-    code >= 200 && code < 300
-  end
-
-  def post_json(url, json, params = {}, method = :post)
+  def send_json(url, json, options, params = {}, method = :post)
     url = "#{url}.json"
     uri = URI.parse(url)
 
@@ -187,7 +182,9 @@ class Redmine < GitIssue::Base
       puts '-' * 80
     end
 
-    Net::HTTP.start(uri.host, uri.port){|http|
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.set_debug_output $stderr if @debug && http.respond_to?(:set_debug_output)
+    http.start(uri.host, uri.port){|http|
 
       path = "#{uri.path}?key=#{@apikey}"
       path += "&" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?

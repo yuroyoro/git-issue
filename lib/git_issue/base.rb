@@ -150,6 +150,11 @@ class GitIssue::Base
     [ticket, branch_name]
   end
 
+  def response_success?(response)
+    code = response.code.to_i
+    code >= 200 && code < 300
+  end
+
   # this is unnecessary hacks for multibytes charactors handling...
   def mlength(s)
     width = 0

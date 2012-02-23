@@ -8,6 +8,7 @@ require 'rubygems'
 require 'uri'
 require 'open-uri'
 require "net/http"
+require "net/https"
 require "uri"
 require 'fileutils'
 require 'json'
