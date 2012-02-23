@@ -9,8 +9,8 @@ class GitIssue::Github < GitIssue::Base
     @apikey = global_configured_value('github.token') if @apikey.blank?
     configure_error('apikey', "git config issue.apikey some_api_key") if @apikey.blank?
 
-    @repo = options[:repo] || configured_value('repo')
-    configure_error('repo', "git config issue.repo git-issue")  if @repo.blank?
+    url = `git config remote.origin.url`.strip
+    @repo = url.match(/github.com[:\/](.+)\.git/)[1]
 
     @user = options[:user] || configured_value('user')
     @user = global_configured_value('github.user') if @user.blank?
@@ -47,7 +47,7 @@ class GitIssue::Github < GitIssue::Base
     params = query_names.inject({}){|h,k| h[k] = options[k] if options[k];h}
     params[:state] ||= "open"
 
-    url = to_url("repos",@user, @repo, 'issues')
+    url = to_url("repos", @repo, 'issues')
 
     issues = fetch_json(url, params)
     issues = issues.sort_by{|i| i['number'].to_i} unless params[:sort] || params[:direction]
@@ -83,7 +83,7 @@ class GitIssue::Github < GitIssue::Base
     property_names = [:title, :body, :assignee, :milestone, :labels]
 
     json = build_issue_json(options, property_names)
-    url = to_url("repos", @user, @repo, 'issues')
+    url = to_url("repos", @repo, 'issues')
 
     issue = post_json(url, json, options)
     puts "created issue #{oneline_issue(issue)}"
@@ -96,7 +96,7 @@ class GitIssue::Github < GitIssue::Base
     property_names = [:title, :body, :assignee, :milestone, :labels, :state]
 
     json = build_issue_json(options, property_names)
-    url = to_url("repos", @user, @repo, 'issues', ticket)
+    url = to_url("repos", @repo, 'issues', ticket)
 
     issue = post_json(url, json, options) # use POST instead of PATCH.
     puts "updated issue #{oneline_issue(issue)}"
@@ -111,7 +111,7 @@ class GitIssue::Github < GitIssue::Base
     raise 'commnet body is required.' unless body
 
     json = { :body => body }
-    url = to_url("repos", @user, @repo, 'issues', ticket, 'comments')
+    url = to_url("repos", @repo, 'issues', ticket, 'comments')
 
     issue = post_json(url, json, options)
 
@@ -167,7 +167,7 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def fetch_issue(ticket_id, params = {})
-    url = to_url("repos",@user, @repo, 'issues', ticket_id)
+    url = to_url("repos", @repo, 'issues', ticket_id)
     url += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
     json = fetch_json(url)
 
@@ -178,7 +178,7 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def fetch_comments(ticket_id)
-    url = to_url("repos",@user, @repo, 'issues', ticket_id, 'comments')
+    url = to_url("repos", @repo, 'issues', ticket_id, 'comments')
     json = fetch_json(url) || []
   end
 
