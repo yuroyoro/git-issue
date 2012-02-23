@@ -9,10 +9,12 @@ class GitIssue::Github < GitIssue::Base
     @apikey = global_configured_value('github.token') if @apikey.blank?
     configure_error('apikey', "git config issue.apikey some_api_key") if @apikey.blank?
 
-    @repo = options[:repo] || configured_value('repo')
+    @user, @repo = get_github_user_and_repo
+
+    @repo = options[:repo] || configured_value('repo') if @repo.blank?
     configure_error('repo', "git config issue.repo git-issue")  if @repo.blank?
 
-    @user = options[:user] || configured_value('user')
+    @user = options[:user] || configured_value('user') if @user.blank?
     @user = global_configured_value('github.user') if @user.blank?
     configure_error('user', "git config issue.user yuroyoro")  if @user.blank?
   end
@@ -356,6 +358,12 @@ class GitIssue::Github < GitIssue::Base
 
     opts.on("--password=VALUE", "For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token." ){|v| @options[:password]}
     opts
+  end
+
+  def get_github_user_and_repo
+    url = `git config remote.origin.url`.strip
+    m = url.match(/github.com[:\/]([^\/]+)\/(.+)\.git/)
+    return m[1], m[2]
   end
 
 end
