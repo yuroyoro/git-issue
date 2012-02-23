@@ -22,7 +22,7 @@ now supporse Redmine,Github-issues
 
 set type of issue traking system(redmine or github)
 
-    $ git config issue.type redmine  
+    $ git config issue.type redmine
 
 set url of issue traking system's api endopoint.
 
@@ -43,7 +43,7 @@ set your account name if using github.
 ## Usage(Redmine)
 
     git issue <command> [ticket_id] [<args>]
-    
+
     Commnads:
       show     s show given issue summary. if given no id,  geuss id from current branch name.
       list     l listing issues.
@@ -82,20 +82,22 @@ set your account name if using github.
           --custom_fields=VALUE        value should be specifies '<custom_fields_id1>:<value2>,<custom_fields_id2>:<value2>, ...'
           --notes=VALUE                add notes to issue
 
-## Usage(Redmine)
+## Usage(Github Issues)
 
     git issue <command> [ticket_id] [<args>]
-    
+
     Commnads:
       show     s show given issue summary. if given no id,  geuss id from current branch name.
       list     l listing issues.
       mine     m display issues that assigned to you.
       commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
+      add      a create issue.
       update   u update issue properties. if given no id, geuss id from current branch name.
       branch   b checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)
       publish  pub push branch to remote repository and set upstream
       rebase   rb rebase branch onto specific newbase
       help     h show usage.
+      mention  men create a comment to given issue
 
     Options:
       -a, --all                        update all paths in the index file
@@ -108,7 +110,17 @@ set your account name if using github.
           --onto=VALUE                 on rebase, start new branch with HEAD equal to "newbase"
           --debug                      debug print
       -s, --supperss_commentsc         show issue journals
-          --state=VALUE                Where 'state' is either 'open' or 'closed'
+          --title=VALUE                Title of issue.Use the given value to create/update issue.
+          --body=VALUE                 Body content of issue.Use the given value to create/update issue.
+          --state=VALUE                Use the given value to create/update issue. or query of listing issues.Where 'state' is either 'open' or 'closed'
+          --milestone=VALUE            Use the given value to create/update issue. or query of listing issues, (Integer Milestone number)
+          --assignee=VALUE             Use the given value to create/update issue. or query of listing issues, (String User login)
+          --mentioned=VALUE            Query of listing issues, (String User login)
+          --labels=VALUE               Use the given value to create/update issue. or query of listing issues, (String list of comma separated Label names)
+          --sort=VALUE                 Query of listing issues, (created,  updated,  comments,  default: created)
+          --direction=VALUE            Query of listing issues, (asc or desc,  default: desc.)
+          --since=VALUE                Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)
+          --password=VALUE             For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token.
 
 ## Copyright
 
