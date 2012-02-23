@@ -37,9 +37,15 @@ class GitIssue::Github < GitIssue::Base
 
   def list(options = {})
     state = options[:state] || "open"
-    url = to_url("repos",@user, @repo, 'issues') + "?state=#{state}"
 
-    issues = fetch_json(url).sort_by{|i| i['number'].to_i}
+    query_names = [:state, :milestone, :assignee, :mentioned, :labels, :sort, :direction]
+    params = query_names.inject({}){|h,k| h[k] = options[k] if options[k];h}
+    params[:state] ||= "open"
+
+    url = to_url("repos",@user, @repo, 'issues')
+
+    issues = fetch_json(url, params)
+    issues = issues.sort_by{|i| i['number'].to_i} unless params[:sort] || params[:direction]
 
     t_max = issues.map{|i| mlength(i['title'])}.max
     l_max = issues.map{|i| mlength(i['labels'].join(","))}.max
@@ -65,6 +71,7 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def add(options = {})
+
   end
 
   def update(options = {})
@@ -97,7 +104,9 @@ class GitIssue::Github < GitIssue::Base
     URI.join(ROOT, path_list.join("/"))
   end
 
-  def fetch_json(url)
+  def fetch_json(url, params = {})
+    url += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
+
     if @debug
       puts url
     end
@@ -212,6 +221,14 @@ class GitIssue::Github < GitIssue::Base
     opts = super
     opts.on("--supperss_comments", "-sc", "show issue journals"){|v| @options[:supperss_comments] = true}
     opts.on("--state=VALUE",   "Where 'state' is either 'open' or 'closed'"){|v| @options[:state] = v}
+    opts.on("--milestone=VALUE", "Query of listing issue, (Integer Milestone number)"){|v| @options[:milestone] = v }
+    opts.on("--assignee=VALUE", "Query of listing issue, (String User login)"){|v| @options[:assignee] = v }
+    opts.on("--mentioned=VALUE", "Query of listing issue, (String User login)"){|v| @options[:mentioned] = v }
+    opts.on("--lables=VALUE", "Query of listing issue, (String list of comma separated Label names)"){|v| @options[:labels] = v }
+    opts.on("--sort=VALUE", "Query of listing issue, (created,  updated,  comments,  default: created)"){|v| @options[:sort] = v }
+    opts.on("--direction=VALUE", "Query of listing issue, (asc or desc,  default: desc.)"){|v| @options[:direction] = v }
+    opts.on("--since=VALUE", "Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)"){|v| @options[:since] = v }
+
 
     opts
   end
