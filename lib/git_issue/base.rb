@@ -80,6 +80,7 @@ class GitIssue::Base
     GitIssue::Command.new(:list,   :l, 'listing issues.'),
     GitIssue::Command.new(:mine,   :m, 'display issues that assigned to you.'),
     GitIssue::Command.new(:commit, :c, 'commit with filling issue subject to messsage.if given no id, geuss id from current branch name.'),
+    GitIssue::Command.new(:add,    :a, 'create issue.'),
     GitIssue::Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
     GitIssue::Command.new(:branch, :b, "checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
 
@@ -149,6 +150,7 @@ class GitIssue::Base
     [ticket, branch_name]
   end
 
+  # this is unnecessary hacks for multibytes charactors handling...
   def mlength(s)
     width = 0
     cnt = 0
@@ -156,6 +158,7 @@ class GitIssue::Base
     cnt + width
   end
 
+  # this is unnecessary hacks for multibytes charactors handling...
   def mljust(s, n)
     return "" unless s
     cnt = 0

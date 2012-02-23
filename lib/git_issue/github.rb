@@ -64,6 +64,12 @@ class GitIssue::Github < GitIssue::Base
 
   end
 
+  def add(options = {})
+  end
+
+  def update(options = {})
+  end
+
   def branch(options = {})
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket

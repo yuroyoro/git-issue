@@ -48,7 +48,6 @@ class Redmine < GitIssue::Base
     output_issues(json['issues'])
   end
 
-
   def mine(options = {})
     list(options.merge(:mine => true))
   end
@@ -67,23 +66,31 @@ class Redmine < GitIssue::Base
     system(cmd)
 
     File.unlink f.path if f.path
+  end
 
+  def add(options = {})
+    property_names = [:project_id, :subject, :description, :done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
+
+    json = build_issue_json(options, property_names)
+    json["issue"][:project_id] ||= Helper.configured_value('project')
+
+    url = to_url('issues')
+
+    json = post_issue(url, json)
+    puts "created issue #{oneline_issue(json["issue"])}"
   end
 
   def update(options = {})
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
 
-    updatable_properties = [:done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
-    json = {"issue" => updatable_properties.inject({}){|h,k| h[k] = options[k] if options[k]; h} }
-
-    if custom_fields = options[:custom_fields]
-      json['custom_fields'] = custom_fields.split(",").map{|s| k,*v = s.split(":");{'id' => k.to_i, 'value' => v.join }}
-    end
+    property_names = [:subject, :done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
+    json = build_issue_json(options, property_names)
 
     url = to_url('issues', ticket)
-    post_json(url, json)
-
+    put_issue(url, json)
+    issue = fetch_issue(ticket)
+    puts "updated issue #{oneline_issue(issue)}"
   end
 
   def branch(options = {})
@@ -113,7 +120,6 @@ class Redmine < GitIssue::Base
     issues = brances.map{|ticket_id| fetch_issue(ticket_id) }
 
     output_issues(issues)
-
   end
 
   def project(options = {})
@@ -156,7 +162,21 @@ class Redmine < GitIssue::Base
     issue
   end
 
-  def post_json(url, json, params = {})
+  def post_issue(url, json, params = {})
+    response = post_json(url, json, params, :post)
+    JSON.parse(response.body) if response_success?(response)
+  end
+
+  def put_issue(url, json, params = {})
+    post_json(url, json, params, :put)
+  end
+
+  def response_success?(response)
+    code = response.code.to_i
+    code >= 200 && code < 300
+  end
+
+  def post_json(url, json, params = {}, method = :post)
     url = "#{url}.json"
     uri = URI.parse(url)
 
@@ -172,7 +192,11 @@ class Redmine < GitIssue::Base
       path = "#{uri.path}?key=#{@apikey}"
       path += "&" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
 
-      request = Net::HTTP::Put.new(path)
+      request = case method
+        when :post then Net::HTTP::Post.new(path)
+        when :put  then Net::HTTP::Put.new(path)
+        else raise "unknown method #{method}"
+      end
 
       request.set_content_type("application/json")
       request.body = json.to_json
@@ -182,8 +206,8 @@ class Redmine < GitIssue::Base
         puts "#{response.code}: #{response.msg}"
         puts response.body
       end
+      response
     }
-
   end
 
   def issue_includes(options)
@@ -215,7 +239,7 @@ class Redmine < GitIssue::Base
     PROPERTY_TITLES[name] || name
   end
 
-  def oneline_issue(issue, options)
+  def oneline_issue(issue, options = {})
     "##{issue['id']} #{issue['subject']}"
   end
 
@@ -393,6 +417,14 @@ class Redmine < GitIssue::Base
     RELATIONS_LABEL[rel] || rel
   end
 
+  def build_issue_json(options, property_names)
+    json = {"issue" => property_names.inject({}){|h,k| h[k] = options[k] if options[k]; h} }
+
+    if custom_fields = options[:custom_fields]
+      json['custom_fields'] = custom_fields.split(",").map{|s| k,*v = s.split(":");{'id' => k.to_i, 'value' => v.join }}
+    end
+    json
+  end
 
   def opt_parser
     opts = super
@@ -401,21 +433,21 @@ class Redmine < GitIssue::Base
     opts.on("--supperss_changesets", "-c", "do not show issue changesets"){|v| @options[:supperss_changesets] = true}
     opts.on("--query=VALUE",'-q=VALUE', "filter query of listing tickets") {|v| @options[:query] = v}
 
-    opts.on("--subject=VALUE", "use the given value to update subject"){|v| @options[:subject] = v.to_i}
-    opts.on("--ratio=VALUE", "use the given value to update done-ratio(%)"){|v| @options[:done_ratio] = v.to_i}
-    opts.on("--status=VALUE", "use the given value to update issue statues id"){|v| @options[:status_id] = v }
-    opts.on("--priority=VALUE", "use the given value to update issue priority id"){|v| @options[:priority_id] = v }
-    opts.on("--tracker=VALUE", "use the given value to update tracker id"){|v| @options[:tracker_id] = v }
-    opts.on("--assigned_to_id=VALUE", "use the given value to update assigned_to id"){|v| @options[:assigned_to_id] = v }
-    opts.on("--category=VALUE", "use the given value to update category id"){|v| @options[:category_id] = v }
-    opts.on("--fixed_version=VALUE", "use the given value to update fixed_version id"){|v| @options[:fixed_version_id] = v }
+    opts.on("--project_id=VALUE", "use the given value to create subject"){|v| @options[:project_id] = v}
+    opts.on("--description=VALUE", "use the given value to create subject"){|v| @options[:description] = v}
+    opts.on("--subject=VALUE", "use the given value to create/update subject"){|v| @options[:subject] = v}
+    opts.on("--ratio=VALUE", "use the given value to create/update done-ratio(%)"){|v| @options[:done_ratio] = v.to_i}
+    opts.on("--status=VALUE", "use the given value to create/update issue statues id"){|v| @options[:status_id] = v }
+    opts.on("--priority=VALUE", "use the given value to create/update issue priority id"){|v| @options[:priority_id] = v }
+    opts.on("--tracker=VALUE", "use the given value to create/update tracker id"){|v| @options[:tracker_id] = v }
+    opts.on("--assigned_to_id=VALUE", "use the given value to create/update assigned_to id"){|v| @options[:assigned_to_id] = v }
+    opts.on("--category=VALUE", "use the given value to create/update category id"){|v| @options[:category_id] = v }
+    opts.on("--fixed_version=VALUE", "use the given value to create/update fixed_version id"){|v| @options[:fixed_version_id] = v }
     opts.on("--custom_fields=VALUE", "value should be specifies '<custom_fields_id1>:<value2>,<custom_fields_id2>:<value2>, ...' "){|v| @options[:custom_fields] = v }
 
     opts.on("--notes=VALUE", "add notes to issue"){|v| @options[:notes] = v}
 
     opts
   end
-
-
 end
 end
