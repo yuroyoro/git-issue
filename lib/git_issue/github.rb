@@ -15,7 +15,7 @@ class GitIssue::Github < GitIssue::Base
     @user = options[:user] || configured_value('user')
     @user = global_configured_value('github.user') if @user.blank?
     configure_error('user', "git config issue.user yuroyoro")  if @user.blank?
-    @sslNoVerify = options[:sslNoVerify] || configured_value('apikey') ? 1 : 0
+    @sslNoVerify = @options[:sslNoVerify] &&  RUBY_VERSION < '1.9.0'
   end
 
   def commands
@@ -357,7 +357,7 @@ class GitIssue::Github < GitIssue::Base
     opts.on("--since=VALUE", "Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)"){|v| @options[:since] = v }
 
     opts.on("--password=VALUE", "For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token." ){|v| @options[:password]}
-    opts.on("--sslnoverify", "don't verify SSL"){ @options[:sslNoVerify] = true}
+    opts.on("--sslnoverify", "don't verify SSL"){|v| @options[:sslNoVerify] = true}
     opts
   end
 
