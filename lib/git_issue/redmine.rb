@@ -184,7 +184,7 @@ class Redmine < GitIssue::Base
 
     http = Net::HTTP.new(uri.host, uri.port)
     http.set_debug_output $stderr if @debug && http.respond_to?(:set_debug_output)
-    http.start(uri.host, uri.port){|http|
+    http.start{|http|
 
       path = "#{uri.path}?key=#{@apikey}"
       path += "&" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
