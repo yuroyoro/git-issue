@@ -15,6 +15,7 @@ class GitIssue::Github < GitIssue::Base
     @user = options[:user] || configured_value('user')
     @user = global_configured_value('github.user') if @user.blank?
     configure_error('user', "git config issue.user yuroyoro")  if @user.blank?
+    @sslNoVerify = options[:sslNoVerify] || configured_value('apikey') ? 1 : 0
   end
 
   def commands
@@ -152,7 +153,9 @@ class GitIssue::Github < GitIssue::Base
     if @debug
       puts url
     end
-    json = open(url, {"Authorizaion" => "#{@user}/token:#{@apikey}"}) {|io|
+    opt = {"Authorizaion" => "#{@user}/token:#{@apikey}"}
+    opt[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if @sslNoVerify
+    json = open(url, opt) {|io|
       JSON.parse(io.read)
     }
 
