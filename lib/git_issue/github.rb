@@ -150,9 +150,8 @@ class GitIssue::Github < GitIssue::Base
   def fetch_json(url, params = {})
     url += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
 
-    if @debug
-      puts url
-    end
+    puts url if @debug
+
     opt = {"Authorizaion" => "#{@user}/token:#{@apikey}"}
     opt[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if @sslNoVerify
     json = open(url, opt) {|io|
@@ -358,6 +357,7 @@ class GitIssue::Github < GitIssue::Base
     opts.on("--since=VALUE", "Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)"){|v| @options[:since] = v }
 
     opts.on("--password=VALUE", "For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token." ){|v| @options[:password]}
+    opts.on("--sslnoverify", "don't verify SSL"){ @options[:sslNoVerify] = true}
     opts
   end
 
