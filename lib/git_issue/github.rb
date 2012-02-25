@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+require 'base64'
+require 'pit'
 
 module GitIssue
 class GitIssue::Github < GitIssue::Base
@@ -14,6 +16,10 @@ class GitIssue::Github < GitIssue::Base
 
     @user = options[:user] || configured_value('user')
     @user = global_configured_value('github.user') if @user.blank?
+    @user = Pit.get("github", :require => {
+        "user" => "Your user name in GitHub",
+    })["user"] if @user.blank?
+
     configure_error('user', "git config issue.user yuroyoro")  if @user.blank?
     @sslNoVerify = @options[:sslNoVerify] &&  RUBY_VERSION < '1.9.0'
   end
@@ -152,7 +158,9 @@ class GitIssue::Github < GitIssue::Base
 
     puts url if @debug
 
-    opt = {"Authorizaion" => "#{@user}/token:#{@apikey}"}
+    password = options[:password] || get_password(@user)
+    opt = {"Authorization" => "Basic " + Base64.encode64("#{@user}:#{password}")}
+
     opt[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if @sslNoVerify
     json = open(url, opt) {|io|
       JSON.parse(io.read)
@@ -259,11 +267,9 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def get_password(user)
-    print "password(#{user}): "
-    system "stty -echo"
-    password = $stdin.gets.chop
-    system "stty echo"
-    password
+    Pit.get("github", :require => {
+        "password" => "Your password in GitHub",
+    })["password"]
   end
 
   def oneline_issue(issue, options = {})
