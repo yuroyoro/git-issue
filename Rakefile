@@ -12,6 +12,7 @@ begin
     gem.authors = ["Tomohito Ozaki"]
     gem.add_development_dependency "rspec"
     gem.add_development_dependency "activesupport"
+    gem.add_development_dependency "pit"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 rescue LoadError

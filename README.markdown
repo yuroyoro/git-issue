@@ -12,11 +12,14 @@ now supporse Redmine,Github-issues
 
 ## Instration
 
+    $ gem install git-issue
+
+    or
+
     $ git clone https://github.com/yuroyoro/git-issue.git
     $ cd git-issue
-    $ rake install jeweler
-    $ rake build
-    $ gem install pkg/git-issue-<version>.gem
+    $ gem install jeweler
+    $ rake install
 
 ## Configuration
 
