@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{git-issue}
-  s.version = "0.7.3"
+  s.version = "0.7.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tomohito Ozaki"]
-  s.date = %q{2012-02-24}
+  s.date = %q{2012-02-28}
   s.default_executable = %q{git-issue}
   s.description = %q{git extention command for issue tracker system.}
   s.email = %q{ozaki@yuroyoro.com}
@@ -50,16 +50,13 @@ Gem::Specification.new do |s|
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<rspec>, [">= 0"])
       s.add_development_dependency(%q<activesupport>, [">= 0"])
-      s.add_development_dependency(%q<pit>, [">= 0"])
     else
       s.add_dependency(%q<rspec>, [">= 0"])
       s.add_dependency(%q<activesupport>, [">= 0"])
-      s.add_dependency(%q<pit>, [">= 0"])
     end
   else
     s.add_dependency(%q<rspec>, [">= 0"])
     s.add_dependency(%q<activesupport>, [">= 0"])
-    s.add_dependency(%q<pit>, [">= 0"])
   end
 end
 
