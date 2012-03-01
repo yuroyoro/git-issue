@@ -3,7 +3,7 @@ git-issue
 
 git subcommand of browse/modify issue traker's tickets.
 
-now supporse Redmine,Github-issues
+now available issue-tracker system is Redmine and Github-issues.
 
 ## ScreenShots
 
@@ -52,13 +52,14 @@ set your account name if using github.
       list     l listing issues.
       mine     m display issues that assigned to you.
       commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
+      add      a create issue.
       update   u update issue properties. if given no id, geuss id from current branch name.
       branch   b checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)
       publish  pub push branch to remote repository and set upstream
       rebase   rb rebase branch onto specific newbase
       help     h show usage.
       local    loc listing local branches tickets
-      project  prj listing ticket belongs to sspecified project
+      project  pj listing ticket belongs to sspecified project
 
     Options:
       -a, --all                        update all paths in the index file
@@ -70,18 +71,20 @@ set your account name if using github.
           --remote=VALUE               on publish, remote repository to push branch
           --onto=VALUE                 on rebase, start new branch with HEAD equal to "newbase"
           --debug                      debug print
-      -j, --supperss_journals          show issue journals
-      -r, --supperss_relations         show issue relations tickets
-      -c, --supperss_changesets        show issue changesets
+      -j, --supperss_journals          do not show issue journals
+      -r, --supperss_relations         do not show issue relations tickets
+      -c, --supperss_changesets        do not show issue changesets
       -q, --query=VALUE                filter query of listing tickets
-          --subject=VALUE              use the given value to update subject
-          --ratio=VALUE                use the given value to update done-ratio(%)
-          --status=VALUE               use the given value to update issue statues id
-          --priority=VALUE             use the given value to update issue priority id
-          --tracker=VALUE              use the given value to update tracker id
-          --assigned_to_id=VALUE       use the given value to update assigned_to id
-          --category=VALUE             use the given value to update category id
-          --fixed_version=VALUE        use the given value to update fixed_version id
+          --project_id=VALUE           use the given value to create subject
+          --description=VALUE          use the given value to create subject
+          --subject=VALUE              use the given value to create/update subject
+          --ratio=VALUE                use the given value to create/update done-ratio(%)
+          --status=VALUE               use the given value to create/update issue statues id
+          --priority=VALUE             use the given value to create/update issue priority id
+          --tracker=VALUE              use the given value to create/update tracker id
+          --assigned_to_id=VALUE       use the given value to create/update assigned_to id
+          --category=VALUE             use the given value to create/update category id
+          --fixed_version=VALUE        use the given value to create/update fixed_version id
           --custom_fields=VALUE        value should be specifies '<custom_fields_id1>:<value2>,<custom_fields_id2>:<value2>, ...'
           --notes=VALUE                add notes to issue
 
@@ -124,6 +127,7 @@ set your account name if using github.
           --direction=VALUE            Query of listing issues, (asc or desc,  default: desc.)
           --since=VALUE                Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)
           --password=VALUE             For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token.
+          --sslnoverify                don't verify SSL
 
 ## Copyright
 
