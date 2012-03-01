@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{git-issue}
-  s.version = "0.7.5"
+  s.version = "0.7.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tomohito Ozaki"]
-  s.date = %q{2012-02-28}
+  s.date = %q{2012-03-01}
   s.default_executable = %q{git-issue}
   s.description = %q{git extention command for issue tracker system.}
   s.email = %q{ozaki@yuroyoro.com}
