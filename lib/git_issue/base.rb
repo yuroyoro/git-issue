@@ -179,13 +179,11 @@ class GitIssue::Base
     s.split(//u).each do |c|
       next if cnt > n
       chars << c
-      cnt += 1
-      cnt += 1 if c.length > 1
+      cnt += c =~ /^[^ -~｡-ﾟ]*$/ ? 2 : 1
     end
     if cnt > n
       chars.pop
-      cnt -= 1
-      cnt -= 1 if chars.last.length > 1
+      cnt -= chars.last =~ /^[^ -~｡-ﾟ]*$/ ? 2 : 1
     end
     chars << " " * (n - cnt) if n > cnt
     chars.join
