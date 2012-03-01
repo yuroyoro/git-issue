@@ -20,7 +20,7 @@ class Redmine < GitIssue::Base
   def commands
     cl = super
     cl << GitIssue::Command.new(:local, :loc, 'listing local branches tickets')
-    cl << GitIssue::Command.new(:project, :prj, 'listing ticket belongs to sspecified project ')
+    cl << GitIssue::Command.new(:project, :pj, 'listing ticket belongs to sspecified project ')
   end
 
   def show(options = {})

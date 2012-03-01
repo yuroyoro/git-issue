@@ -17,20 +17,22 @@ class GitIssue::Base
     split_ticket = lambda{|s| s.nil? || s.empty? ? nil : s.split(/,/).map{|v| v.strip.to_i} }
 
     @tickets = []
-    cmd = args.shift || default_cmd
+    cmd = args.shift
 
     if cmd =~ /(\d+,?\s?)+/
       @tickets = split_ticket.call(cmd)
-      cmd = :show
+      cmd = nil
     end
+
+    @tickets += args.map{|s| split_ticket.call(s)}.flatten.uniq
+    @tickets = [guess_ticket].compact if @tickets.empty?
+
+    cmd ||= (@tickets.nil? || @tickets.empty?) ? default_cmd : :show
     cmd = cmd.to_sym
 
     @command = find_command(cmd)
 
     exit_with_message("invalid command <#{cmd}>") unless @command
-
-    @tickets += args.map{|s| split_ticket.call(s)}.flatten.uniq
-    @tickets = [guess_ticket] if @tickets.empty?
   end
 
   def default_cmd
@@ -134,7 +136,7 @@ class GitIssue::Base
 
   def guess_ticket
     branch = current_branch
-    if branch =~ %r!id/(\d+)!
+    if branch =~ %r!id/(\d+)! || branch =~ /^(\d+)_/ || branch =~ /_(\d+)$/
       ticket = $1
     end
   end
