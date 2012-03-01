@@ -15,6 +15,7 @@ require 'json'
 require 'optparse'
 require 'tempfile'
 require 'active_support/all'
+require 'shellwords'
 
 module GitIssue
   class Command
@@ -56,7 +57,71 @@ module GitIssue
       end
     end
 
-    module_function :configured_value, :global_configured_value, :configure_error, :its_klass_of
+    def git_editor
+      # possible: ~/bin/vi, $SOME_ENVIRONMENT_VARIABLE, "C:\Program Files\Vim\gvim.exe" --nofork
+      editor = `git var GIT_EDITOR`
+      editor = ENV[$1] if editor =~ /^\$(\w+)$/
+      editor = File.expand_path editor if (editor =~ /^[~.]/ or editor.index('/')) and editor !~ /["']/
+      editor.shellsplit
+    end
+
+    def git_dir
+      `git rev-parse -q --git-dir`.strip
+    end
+
+    def read_title_and_body(file)
+      title, body = '', ''
+      File.open(file, 'r') { |msg|
+        msg.each_line do |line|
+          next if line.index('#') == 0
+          ((body.empty? and line =~ /\S/) ? title : body) << line
+        end
+      }
+      title.tr!("\n", ' ')
+      title.strip!
+      body.strip!
+
+      [title =~ /\S/ ? title : nil, body =~ /\S/ ? body : nil]
+    end
+
+    def read_body(file)
+      f = open(file)
+      body = f.read
+      f.close
+      body.strip
+    end
+
+    def get_title_and_body_from_editor(message=nil)
+      message_file = File.join(git_dir, 'ISSUE_MESSAGE')
+      File.open(message_file, 'w') { |msg|
+        msg.puts message
+      }
+      edit_cmd = Array(git_editor).dup
+      edit_cmd << '-c' << 'set ft=gitcommit' if edit_cmd[0] =~ /^[mg]?vim$/
+      edit_cmd << message_file
+      system(*edit_cmd)
+      abort "can't open text editor for issue message" unless $?.success?
+      title, body = read_title_and_body(message_file)
+      abort "Aborting due to empty issue title" unless title
+      [title, body]
+    end
+
+    def get_body_from_editor(message=nil)
+      message_file = File.join(git_dir, 'ISSUE_MESSAGE')
+      File.open(message_file, 'w') { |msg|
+        msg.puts message
+      }
+      edit_cmd = Array(git_editor).dup
+      edit_cmd << '-c' << 'set ft=gitcommit' if edit_cmd[0] =~ /^[mg]?vim$/
+      edit_cmd << message_file
+      system(*edit_cmd)
+      abort "can't open text editor for message" unless $?.success?
+      body = read_body(message_file)
+      abort "Aborting due to empty message" unless body
+      body
+    end
+
+    module_function :configured_value, :global_configured_value, :configure_error, :its_klass_of, :get_title_and_body_from_editor, :get_body_from_editor
   end
 
   def self.main(argv)
