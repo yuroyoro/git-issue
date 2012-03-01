@@ -89,6 +89,11 @@ class GitIssue::Github < GitIssue::Base
   def add(options = {})
     property_names = [:title, :body, :assignee, :milestone, :labels]
 
+    required_properties = [:title]
+    required_properties.each do |name|
+      options[name] = prompt(name) unless options[name]
+    end
+
     json = build_issue_json(options, property_names)
     url = to_url("repos", @repo, 'issues')
 

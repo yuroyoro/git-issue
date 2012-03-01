@@ -71,6 +71,11 @@ class Redmine < GitIssue::Base
   def add(options = {})
     property_names = [:project_id, :subject, :description, :done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
 
+    required_properties = [:subject, :description]
+    required_properties.each do |name|
+      options[name] = prompt(name) unless options[name]
+    end
+
     json = build_issue_json(options, property_names)
     json["issue"][:project_id] ||= Helper.configured_value('project')
 
@@ -85,6 +90,7 @@ class Redmine < GitIssue::Base
     raise 'ticket_id is required.' unless ticket
 
     property_names = [:subject, :done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
+
     json = build_issue_json(options, property_names)
 
     url = to_url('issues', ticket)

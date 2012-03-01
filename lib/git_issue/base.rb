@@ -155,6 +155,11 @@ class GitIssue::Base
     code >= 200 && code < 300
   end
 
+  def prompt(name)
+   print "#{name}: "
+   $stdin.gets.chop
+  end
+
   # this is unnecessary hacks for multibytes charactors handling...
   def mlength(s)
     width = 0
