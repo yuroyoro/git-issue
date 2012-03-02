@@ -71,6 +71,14 @@ class Redmine < GitIssue::Base
   def add(options = {})
     property_names = [:project_id, :subject, :description, :done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
 
+    project_id = options[:project_id] || Helper.configured_value('project')
+    if options.slice(*property_names).empty?
+      issue = read_issue_from_editor({"project" => {"id" => project_id}}, options)
+      description = issue.delete(:notes)
+      issue[:description] = description
+      options.merge!(issue)
+    end
+
     required_properties = [:subject, :description]
     required_properties.each do |name|
       options[name] = prompt(name) unless options[name]
@@ -90,6 +98,13 @@ class Redmine < GitIssue::Base
     raise 'ticket_id is required.' unless ticket
 
     property_names = [:subject, :done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
+
+    if options.slice(*property_names).empty?
+      org_issue = fetch_issue(ticket, options)
+      update_attrs = read_issue_from_editor(org_issue, options)
+      update_attrs = update_attrs.reject{|k,v| v.present? && org_issue[k] == v}
+      options.merge!(update_attrs)
+    end
 
     json = build_issue_json(options, property_names)
 
@@ -421,12 +436,68 @@ class Redmine < GitIssue::Base
   end
 
   def build_issue_json(options, property_names)
-    json = {"issue" => property_names.inject({}){|h,k| h[k] = options[k] if options[k]; h} }
+    json = {"issue" => property_names.inject({}){|h,k| h[k] = options[k] if options[k].present?; h} }
 
     if custom_fields = options[:custom_fields]
       json['custom_fields'] = custom_fields.split(",").map{|s| k,*v = s.split(":");{'id' => k.to_i, 'value' => v.join }}
     end
     json
+  end
+
+  def read_issue_from_editor(issue, options = {})
+    id_of = lambda{|name| issue[name] ? issue[name]["id"] : ""}
+
+    message = <<-MSG
+#{issue["subject"].present? ? issue["subject"].chomp : "### subject here ###"}
+
+Project  : #{id_of.call("project")}
+Tracker  : #{id_of.call("tracker")}
+Status   : #{id_of.call("status")}
+Priority : #{id_of.call("priority")}
+Category : #{id_of.call("category")}
+Assigned : #{id_of.call("assigned_to")}
+Version  : #{id_of.call("fixed_version")}
+
+### notes here ###
+MSG
+    body =  get_body_from_editor(message)
+
+    subject, dummy, project_id, tracker_id, status_id, priority_id, category_id, assigned_to_id, fixed_version_id, dummy, *notes = body.lines.to_a
+
+    notes = if notes.present?
+      notes.reject{|line| line.chomp == "### notes here ###"}.join("")
+    else
+      nil
+    end
+
+    if @debug
+      puts "------"
+      puts "sub: #{subject}"
+      puts "pid: #{project_id}"
+      puts "tid: #{tracker_id}"
+      puts "sid: #{status_id}"
+      puts "prd: #{priority_id}"
+      puts "cat: #{category_id}"
+      puts "ass: #{assigned_to_id}"
+      puts "vss: #{fixed_version_id}"
+      puts "nos: #{notes}"
+      puts "------"
+    end
+
+    take_id = lambda{|s|
+      x, i = s.chomp.split(":")
+      i.present? ? i.strip.to_i : nil
+    }
+
+    { :subject => subject.chomp, :project_id => take_id.call(project_id),
+      :tracker_id => take_id.call(tracker_id),
+      :status_id => take_id.call(status_id),
+      :priority_id => take_id.call(priority_id),
+      :category_id => take_id.call(category_id),
+      :assigned_to_id => take_id.call(assigned_to_id),
+      :fixed_version_id => take_id.call(fixed_version_id),
+      :notes => notes
+    }
   end
 
   def opt_parser
