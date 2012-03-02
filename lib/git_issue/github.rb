@@ -85,8 +85,14 @@ class GitIssue::Github < GitIssue::Base
   def add(options = {})
     property_names = [:title, :body, :assignee, :milestone, :labels]
 
+    message = <<-MSG
+### Write title here ###
+
+### descriptions here ###
+    MSG
+
     unless options[:title]
-      options[:title], options[:body] = get_title_and_body_from_editor
+      options[:title], options[:body] = get_title_and_body_from_editor(message)
     end
 
     json = build_issue_json(options, property_names)
@@ -102,12 +108,7 @@ class GitIssue::Github < GitIssue::Base
 
     property_names = [:title, :body, :assignee, :milestone, :labels, :state]
 
-    options_has_keys_other_than_ticket_id = false
-    property_names.each do |name|
-      options_has_keys_other_than_ticket_id = true if options.has_key?(name)
-    end
-
-    unless options_has_keys_other_than_ticket_id
+    if options.slice(*property_names).empty?
       issue = fetch_issue(ticket)
       message = "#{issue['title']}\n\n#{issue['body']}"
       options[:title], options[:body] = get_title_and_body_from_editor(message)

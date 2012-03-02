@@ -69,14 +69,12 @@ module GitIssue
       `git rev-parse -q --git-dir`.strip
     end
 
-    def read_title_and_body(file)
+    def split_head_and_body(text)
       title, body = '', ''
-      File.open(file, 'r') { |msg|
-        msg.each_line do |line|
-          next if line.index('#') == 0
-          ((body.empty? and line =~ /\S/) ? title : body) << line
-        end
-      }
+      text.each_line do |line|
+        next if line.index('#') == 0
+        ((body.empty? and line =~ /\S/) ? title : body) << line
+      end
       title.tr!("\n", ' ')
       title.strip!
       body.strip!
@@ -92,21 +90,21 @@ module GitIssue
     end
 
     def get_title_and_body_from_editor(message=nil)
-      message_file = File.join(git_dir, 'ISSUE_MESSAGE')
-      File.open(message_file, 'w') { |msg|
-        msg.puts message
-      }
-      edit_cmd = Array(git_editor).dup
-      edit_cmd << '-c' << 'set ft=gitcommit' if edit_cmd[0] =~ /^[mg]?vim$/
-      edit_cmd << message_file
-      system(*edit_cmd)
-      abort "can't open text editor for issue message" unless $?.success?
-      title, body = read_title_and_body(message_file)
-      abort "Aborting due to empty issue title" unless title
-      [title, body]
+      open_editor(message) do |text|
+        title, body = split_head_and_body(text)
+        abort "Aborting due to empty issue title" unless title
+        [title, body]
+      end
     end
 
     def get_body_from_editor(message=nil)
+      open_editor(message) do |text|
+        abort "Aborting due to empty message" unless text
+        text
+      end
+    end
+
+    def open_editor(message = nil, &block)
       message_file = File.join(git_dir, 'ISSUE_MESSAGE')
       File.open(message_file, 'w') { |msg|
         msg.puts message
@@ -114,11 +112,14 @@ module GitIssue
       edit_cmd = Array(git_editor).dup
       edit_cmd << '-c' << 'set ft=gitcommit' if edit_cmd[0] =~ /^[mg]?vim$/
       edit_cmd << message_file
+
       system(*edit_cmd)
-      abort "can't open text editor for message" unless $?.success?
-      body = read_body(message_file)
-      abort "Aborting due to empty message" unless body
-      body
+      abort "can't open text editor for issue message" unless $?.success?
+
+      text = read_body(message_file)
+      abort "Aborting cause messages didn't modified." if message == text
+
+      yield text
     end
 
     module_function :configured_value, :global_configured_value, :configure_error, :its_klass_of, :get_title_and_body_from_editor, :get_body_from_editor
