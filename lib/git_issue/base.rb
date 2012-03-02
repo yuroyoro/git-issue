@@ -264,5 +264,6 @@ class GitIssue::Base
     @syserr.puts msg
   end
 
+
 end
 

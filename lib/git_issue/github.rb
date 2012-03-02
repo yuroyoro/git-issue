@@ -89,9 +89,8 @@ class GitIssue::Github < GitIssue::Base
   def add(options = {})
     property_names = [:title, :body, :assignee, :milestone, :labels]
 
-    required_properties = [:title]
-    required_properties.each do |name|
-      options[name] = prompt(name) unless options[name]
+    unless options[:title]
+      options[:title], options[:body] = get_title_and_body_from_editor
     end
 
     json = build_issue_json(options, property_names)
@@ -107,6 +106,17 @@ class GitIssue::Github < GitIssue::Base
 
     property_names = [:title, :body, :assignee, :milestone, :labels, :state]
 
+    options_has_keys_other_than_ticket_id = false
+    property_names.each do |name|
+      options_has_keys_other_than_ticket_id = true if options.has_key?(name)
+    end
+
+    unless options_has_keys_other_than_ticket_id
+      issue = fetch_issue(ticket)
+      message = "#{issue['title']}\n\n#{issue['body']}"
+      options[:title], options[:body] = get_title_and_body_from_editor(message)
+    end
+
     json = build_issue_json(options, property_names)
     url = to_url("repos", @repo, 'issues', ticket)
 
@@ -120,7 +130,12 @@ class GitIssue::Github < GitIssue::Base
     raise 'ticket_id is required.' unless ticket
 
     body = options[:body]
-    raise 'commnet body is required.' unless body
+
+    unless body
+      body = get_body_from_editor
+    end
+
+    raise 'comment body is required.' if body.length == 0
 
     json = { :body => body }
     url = to_url("repos", @repo, 'issues', ticket, 'comments')
