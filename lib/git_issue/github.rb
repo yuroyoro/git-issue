@@ -7,10 +7,6 @@ class GitIssue::Github < GitIssue::Base
   def initialize(args, options = {})
     super(args, options)
 
-    @apikey = options[:apikey] || configured_value('apikey')
-    @apikey = global_configured_value('github.token') if @apikey.blank?
-    configure_error('apikey', "git config issue.apikey some_api_key") if @apikey.blank?
-
     url = `git config remote.origin.url`.strip
     @repo = url.match(/github.com[:\/](.+)\.git/)[1]
 
