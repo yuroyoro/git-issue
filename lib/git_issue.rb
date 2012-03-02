@@ -99,12 +99,12 @@ module GitIssue
 
     def get_body_from_editor(message=nil)
       open_editor(message) do |text|
-        abort "Aborting due to empty message" unless text
+        abort "Aborting due to empty message" if text.empty?
         text
       end
     end
 
-    def open_editor(message = nil, &block)
+    def open_editor(message = nil, abort_if_not_modified = true , &block)
       message_file = File.join(git_dir, 'ISSUE_MESSAGE')
       File.open(message_file, 'w') { |msg|
         msg.puts message
@@ -117,7 +117,7 @@ module GitIssue
       abort "can't open text editor for issue message" unless $?.success?
 
       text = read_body(message_file)
-      abort "Aborting cause messages didn't modified." if message == text
+      abort "Aborting cause messages didn't modified." if message == text && abort_if_not_modified
 
       yield text
     end

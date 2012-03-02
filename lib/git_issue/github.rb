@@ -23,6 +23,7 @@ class GitIssue::Github < GitIssue::Base
   def commands
     cl = super
     cl << GitIssue::Command.new(:mention, :men, 'create a comment to given issue')
+    cl << GitIssue::Command.new(:close , :cl, 'close an issue with comment. comment is optional.')
   end
 
   def show(options = {})
@@ -126,13 +127,8 @@ class GitIssue::Github < GitIssue::Base
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
 
-    body = options[:body]
-
-    unless body
-      body = get_body_from_editor
-    end
-
-    raise 'comment body is required.' if body.length == 0
+    body = options[:body] || get_body_from_editor("### comment here ###")
+    raise 'comment body is required.' if body.empty?
 
     json = { :body => body }
     url = to_url("repos", @repo, 'issues', ticket, 'comments')
@@ -161,6 +157,24 @@ class GitIssue::Github < GitIssue::Base
     end
 
     show(options)
+  end
+
+  def close(options = {})
+    ticket = options[:ticket_id]
+    raise 'ticket_id is required.' unless ticket
+
+    body = options[:body] || get_body_from_editor("### comment here ###")
+
+    json = {:state => 'closed' }
+    url = to_url("repos", @repo, 'issues', ticket)
+
+    issue = post_json(url, json, options)
+
+    comment_json = { :body => body }
+    comment_url = to_url("repos", @repo, 'issues', ticket, 'comments')
+    post_json(comment_url, comment_json, options)
+
+    puts "closed issue #{oneline_issue(issue)}"
   end
 
   private
