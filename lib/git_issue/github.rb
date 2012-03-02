@@ -367,7 +367,7 @@ class GitIssue::Github < GitIssue::Base
     opts.on("--direction=VALUE", "Query of listing issues, (asc or desc,  default: desc.)"){|v| @options[:direction] = v }
     opts.on("--since=VALUE", "Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)"){|v| @options[:since] = v }
 
-    opts.on("--password=VALUE", "For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token." ){|v| @options[:password]}
+    opts.on("--password=VALUE", "For Authorizaion of create/update issue.  Github API v3 doesn't supports API token base authorization for now. then, use Basic Authorizaion instead token." ){|v| @options[:password]}
     opts.on("--sslnoverify", "don't verify SSL"){|v| @options[:sslNoVerify] = true}
     opts
   end
