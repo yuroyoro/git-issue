@@ -278,7 +278,7 @@ class Redmine < GitIssue::Base
     add_prop_name = Proc.new{|name|
       title = property_title(name)
       value = ''
-      value = issue[name]['name'] if issue[name] && issue[name]['name']
+      value = "#{issue[name]['name']}(#{issue[name]['id']})" if issue[name] && issue[name]['name']
       props << [title, value]
     }
 
@@ -445,7 +445,7 @@ class Redmine < GitIssue::Base
   end
 
   def read_issue_from_editor(issue, options = {})
-    id_of = lambda{|name| issue[name] ? issue[name]["id"] : ""}
+    id_of = lambda{|name| issue[name] ? sprintf('%2s : %s', issue[name]["id"] , issue[name]['name'] ): ""}
 
     message = <<-MSG
 #{issue["subject"].present? ? issue["subject"].chomp : "### subject here ###"}
@@ -485,7 +485,7 @@ MSG
     end
 
     take_id = lambda{|s|
-      x, i = s.chomp.split(":")
+      x, i, name = s.chomp.split(":")
       i.present? ? i.strip.to_i : nil
     }
 
