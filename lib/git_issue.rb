@@ -38,9 +38,9 @@ module GitIssue
     end
 
 
-    def configured_value(name)
+    def configured_value(name, trim = true)
       res = `git config issue.#{name}`
-      res.strip
+      trim ? res.strip : res
     end
 
     def global_configured_value(name)

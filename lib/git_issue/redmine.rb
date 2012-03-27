@@ -396,22 +396,53 @@ class Redmine < GitIssue::Base
   end
 
   def format_issue_tables(issues_json)
-    issues = issues_json.map{ |issue|
-      project     = issue['project']['name']     rescue ""
-      tracker     = issue['tracker']['name']     rescue ""
-      status      = issue['status']['name']      rescue ""
-      assigned_to = issue['assigned_to']['name'] rescue ""
-      [issue['id'], project, tracker, status, issue['subject'], assigned_to, issue['updated_on']]
+    name_of = lambda{|issue, name| issue[name]['name'] rescue ""}
+
+    issues = issues_json.map{ |issue|{
+      :id => sprintf("#%-4d", issue['id']), :subject => issue['subject'],
+      :project     => name_of.call(issue, 'project'),
+      :tracker     => name_of.call(issue, 'tracker'),
+      :status      => name_of.call(issue, 'status'),
+      :assigned_to => name_of.call(issue, 'assigned_to'),
+      :version     => name_of.call(issue, 'fixed_version'),
+      :priority    => name_of.call(issue, 'priority'),
+      :category    => name_of.call(issue, 'category'),
+      :updated_on  => issue['updated_on'].to_date
+    }}
+
+    max_of = lambda{|name, limit|
+      max = issues.map{|i| mlength(i[name])}.max
+      [max, limit].min
+    }
+    max_length = {
+      :project     => max_of.call(:project, 20),
+      :tracker     => max_of.call(:tracker, 20),
+      :status      => max_of.call(:status, 20),
+      :assigned_to => max_of.call(:assigned_to, 20),
+      :version     => max_of.call(:version, 20),
+      :priority    => max_of.call(:priority, 20),
+      :category    => max_of.call(:category, 20),
+      :subject => 80
     }
 
-    p_max = issues.map{|i| mlength(i[1])}.max
-    t_max = issues.map{|i| mlength(i[2])}.max
-    s_max = issues.map{|i| mlength(i[3])}.max
-    a_max = issues.map{|i| mlength(i[5])}.max
+    fmt = configured_value('defaultformat', false)
+    fmt_chars =  { :I => :id, :S => :subject,
+      :A => :assigned_to, :s => :status,  :T => :tracker,
+      :P => :priority,    :p => :project, :V => :version,
+      :C => :category,    :U => :updated_on }
 
-    issues.map {|i|
-      sprintf("#%-4d  %s  %s  %s  %s %s  %s",  i[0].to_i, mljust(i[1], p_max), mljust(i[2], t_max), mljust(i[3], s_max),  mljust(i[4], 80), mljust(i[5], a_max), to_date(i[6]))
+    format_to = lambda{|i|
+      res = fmt.dup
+      fmt_chars.each do |k, v|
+        res.gsub!(/\%(\d*)#{k}/) do |s|
+          max = $1.blank? ? max_length[v] : $1.to_i
+          max ? mljust(i[v], max) : i[v]
+        end
+      end
+      res
     }
+
+    issues.map{|i| format_to.call(i) }
   end
 
   def output_issues(issues)
