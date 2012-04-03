@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Git-issue by yuroyoro</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Git-issue</h1>
+        <h2>git subcommand of browse/modify issue traker's tickets.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/yuroyoro/git-issue/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/yuroyoro/git-issue/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/yuroyoro/git-issue" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>git-issue</h1>
+
+<p>git subcommand of browse/modify issue traker's tickets.</p>
+
+<p>now available issue-tracker system is Redmine and Github-issues.</p>
+
+<h2>ScreenShots</h2>
+
+<p><img src="https://github.com/yuroyoro/git-issue/raw/master/images/git-issue_screenshot-1.png" width="600"><img src="https://github.com/yuroyoro/git-issue/raw/master/images/git-issue_screenshot-2.png" width="600"></p>
+
+<h2>Instration</h2>
+
+<pre><code>$ gem install git-issue
+
+or
+
+$ git clone <a href="https://github.com/yuroyoro/git-issue.git">https://github.com/yuroyoro/git-issue.git</a>
+$ cd git-issue
+$ gem install jeweler
+$ rake install
+</code></pre>
+
+<h2>Configuration</h2>
+
+<p>set type of issue traking system(redmine or github)</p>
+
+<pre><code>$ git config issue.type redmine
+</code></pre>
+
+<p>set url of issue traking system's api endopoint.</p>
+
+<pre><code>$ git config issue.url <a href="http://redmine.example.com">http://redmine.example.com</a>
+</code></pre>
+
+<p>set api-key for accessing issue traking system.</p>
+
+<pre><code>$ git config issue.apikey FWeaj3I9laei03A....
+</code></pre>
+
+<p>set repository name if using github.</p>
+
+<pre><code>$ git config issue.repo gitterb
+</code></pre>
+
+<p>set your account name if using github.</p>
+
+<pre><code>$ git config issue.user yuroyoro
+</code></pre>
+
+<h2>Usage(Redmine)</h2>
+
+<pre><code>git issue &lt;command&gt; [ticket_id] [&lt;args&gt;]
+
+Commnads:
+  show     s show given issue summary. if given no id,  geuss id from current branch name.
+  list     l listing issues.
+  mine     m display issues that assigned to you.
+  commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
+  add      a create issue.
+  update   u update issue properties. if given no id, geuss id from current branch name.
+  branch   b checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/&lt;issue_id&gt;)
+  publish  pub push branch to remote repository and set upstream
+  rebase   rb rebase branch onto specific newbase
+  help     h show usage.
+  local    loc listing local branches tickets
+  project  pj listing ticket belongs to sspecified project
+
+Options:
+  -a, --all                        update all paths in the index file
+  -f, --force                      force create branch
+  -v, --verbose                    show issue details
+  -n, --max-count=VALUE            maximum number of issues
+      --oneline                    display short info
+      --raw-id                     output ticket number only
+      --remote=VALUE               on publish, remote repository to push branch
+      --onto=VALUE                 on rebase, start new branch with HEAD equal to "newbase"
+      --debug                      debug print
+  -j, --supperss_journals          do not show issue journals
+  -r, --supperss_relations         do not show issue relations tickets
+  -c, --supperss_changesets        do not show issue changesets
+  -q, --query=VALUE                filter query of listing tickets
+      --project_id=VALUE           use the given value to create subject
+      --description=VALUE          use the given value to create subject
+      --subject=VALUE              use the given value to create/update subject
+      --ratio=VALUE                use the given value to create/update done-ratio(%)
+      --status=VALUE               use the given value to create/update issue statues id
+      --priority=VALUE             use the given value to create/update issue priority id
+      --tracker=VALUE              use the given value to create/update tracker id
+      --assigned_to_id=VALUE       use the given value to create/update assigned_to id
+      --category=VALUE             use the given value to create/update category id
+      --fixed_version=VALUE        use the given value to create/update fixed_version id
+      --custom_fields=VALUE        value should be specifies '&lt;custom_fields_id1&gt;:&lt;value2&gt;,&lt;custom_fields_id2&gt;:&lt;value2&gt;, ...'
+      --notes=VALUE                add notes to issue
+</code></pre>
+
+<h2>Usage(Github Issues)</h2>
+
+<pre><code>git issue &lt;command&gt; [ticket_id] [&lt;args&gt;]
+
+Commnads:
+  show     s show given issue summary. if given no id,  geuss id from current branch name.
+  list     l listing issues.
+  mine     m display issues that assigned to you.
+  commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
+  add      a create issue.
+  update   u update issue properties. if given no id, geuss id from current branch name.
+  branch   b checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/&lt;issue_id&gt;)
+  publish  pub push branch to remote repository and set upstream
+  rebase   rb rebase branch onto specific newbase
+  help     h show usage.
+  mention  men create a comment to given issue
+
+Options:
+  -a, --all                        update all paths in the index file
+  -f, --force                      force create branch
+  -v, --verbose                    show issue details
+  -n, --max-count=VALUE            maximum number of issues
+      --oneline                    display short info
+      --raw-id                     output ticket number only
+      --remote=VALUE               on publish, remote repository to push branch
+      --onto=VALUE                 on rebase, start new branch with HEAD equal to "newbase"
+      --debug                      debug print
+  -s, --supperss_commentsc         show issue journals
+      --title=VALUE                Title of issue.Use the given value to create/update issue.
+      --body=VALUE                 Body content of issue.Use the given value to create/update issue.
+      --state=VALUE                Use the given value to create/update issue. or query of listing issues.Where 'state' is either 'open' or 'closed'
+      --milestone=VALUE            Use the given value to create/update issue. or query of listing issues, (Integer Milestone number)
+      --assignee=VALUE             Use the given value to create/update issue. or query of listing issues, (String User login)
+      --mentioned=VALUE            Query of listing issues, (String User login)
+      --labels=VALUE               Use the given value to create/update issue. or query of listing issues, (String list of comma separated Label names)
+      --sort=VALUE                 Query of listing issues, (created,  updated,  comments,  default: created)
+      --direction=VALUE            Query of listing issues, (asc or desc,  default: desc.)
+      --since=VALUE                Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)
+      --password=VALUE             For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token.
+      --sslnoverify                don't verify SSL
+</code></pre>
+
+<h2>Copyright</h2>
+
+<p>Copyright (c) 2011 Tomohito Ozaki. See LICENSE for details.</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
