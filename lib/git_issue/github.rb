@@ -50,6 +50,7 @@ class GitIssue::Github < GitIssue::Base
     query_names = [:state, :milestone, :assignee, :mentioned, :labels, :sort, :direction]
     params = query_names.inject({}){|h,k| h[k] = options[k] if options[k];h}
     params[:state] ||= "open"
+    params = {"per_page" => options[:max_count] || 30 }
 
     url = to_url("repos", @repo, 'issues')
 
