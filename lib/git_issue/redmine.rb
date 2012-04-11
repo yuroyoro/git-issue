@@ -478,6 +478,9 @@ class Redmine < GitIssue::Base
   def read_issue_from_editor(issue, options = {})
     id_of = lambda{|name| issue[name] ? sprintf('%2s : %s', issue[name]["id"] , issue[name]['name'] ): ""}
 
+    memofile = configured_value('memofile')
+    memo = File.open(memofile).read.lines.map{|l| "# #{l}"}.join("") unless memofile.blank?
+
     message = <<-MSG
 #{issue["subject"].present? ? issue["subject"].chomp : "### subject here ###"}
 
@@ -489,14 +492,16 @@ Category : #{id_of.call("category")}
 Assigned : #{id_of.call("assigned_to")}
 Version  : #{id_of.call("fixed_version")}
 
-### notes here ###
+# Please enter the notes for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts.
+#{memo}
 MSG
     body =  get_body_from_editor(message)
 
     subject, dummy, project_id, tracker_id, status_id, priority_id, category_id, assigned_to_id, fixed_version_id, dummy, *notes = body.lines.to_a
 
     notes = if notes.present?
-      notes.reject{|line| line.chomp == "### notes here ###"}.join("")
+      notes.reject{|l| l =~ /^#/}.join("")
     else
       nil
     end
