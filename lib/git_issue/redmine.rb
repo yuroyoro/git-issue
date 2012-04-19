@@ -270,6 +270,9 @@ class Redmine < GitIssue::Base
     msg << ""
 
     props = []
+    prop_name = Proc.new{|name|
+      "#{issue[name]['name']}(#{issue[name]['id']})" if issue[name] && issue[name]['name']
+    }
     add_prop = Proc.new{|name|
       title = property_title(name)
       value = issue[name] || ""
@@ -278,7 +281,7 @@ class Redmine < GitIssue::Base
     add_prop_name = Proc.new{|name|
       title = property_title(name)
       value = ''
-      value = "#{issue[name]['name']}(#{issue[name]['id']})" if issue[name] && issue[name]['name']
+      value = prop_name.call(name)
       props << [title, value]
     }
 
@@ -290,7 +293,6 @@ class Redmine < GitIssue::Base
     add_prop.call('done_ratio')
     add_prop_name.call('category')
     add_prop.call('estimated_hours')
-    add_prop_name.call('fixed_version')
 
     # acd custom_fields if it have value.
     if custom_fields = issue[:custom_fields] && custom_fields.reject{|cf| cf['value'].nil? || cf['value'].empty? }
@@ -307,6 +309,8 @@ class Redmine < GitIssue::Base
         msg[-1] = "#{msg.last} #{row}"
       end
     end
+
+    msg <<  sprintf("%s : %s", mljust(property_title('fixed_version'),18), mljust(prop_name.call('fixed_version'), 66))
 
     # display relations tickets
     if ! options[:supperss_relations] || options[:verbose]
@@ -412,7 +416,7 @@ class Redmine < GitIssue::Base
 
     max_of = lambda{|name, limit|
       max = issues.map{|i| mlength(i[name])}.max
-      [max, limit].min
+      [max, limit].compact.min
     }
     max_length = {
       :project     => max_of.call(:project, 20),
