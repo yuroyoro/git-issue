@@ -40,7 +40,12 @@ module GitIssue
 
     def configured_value(name, trim = true)
       res = `git config issue.#{name}`
-      trim ? res.strip : res
+      res = trim ? res.strip : res
+      if res.empty?
+        res = `git config #{name}`
+        res = trim ? res.strip : res
+      end
+      res
     end
 
     def global_configured_value(name)
