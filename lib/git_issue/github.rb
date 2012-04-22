@@ -7,8 +7,11 @@ class GitIssue::Github < GitIssue::Base
   def initialize(args, options = {})
     super(args, options)
 
-    url = `git config remote.origin.url`.strip
-    @repo = url.match(/github.com[:\/](.+)\.git/)[1]
+    @repo = configured_value('repo')
+    if @repo.blank?
+      url = `git config remote.origin.url`.strip
+      @repo = url.match(/github.com[:\/](.+)\.git/)[1]
+    end
 
     @user = options[:user] || configured_value('user')
     @user = global_configured_value('github.user') if @user.blank?
