@@ -204,6 +204,10 @@ class Redmine < GitIssue::Base
     end
 
     http = Net::HTTP.new(uri.host, uri.port)
+    if uri.scheme == 'https'
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
     http.set_debug_output $stderr if @debug && http.respond_to?(:set_debug_output)
     http.start{|http|
 
