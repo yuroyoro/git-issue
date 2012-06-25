@@ -20,7 +20,15 @@ class GitIssue::Github < GitIssue::Base
     })["user"] if @user.blank?
 
     configure_error('user', "git config issue.user yuroyoro")  if @user.blank?
-    @sslNoVerify = @options[:sslNoVerify] &&  RUBY_VERSION < '1.9.0'
+    @ssl_options = {}
+    if @options.key?(:sslNoVerify) && RUBY_VERSION < "1.9.0"
+      @ssl_options[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE
+    elsif configured_value('http.sslVerify') == "false"
+      @ssl_options[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE
+    end
+    if (ssl_cert = configured_value('http.sslCert'))
+      @ssl_options[:ssl_ca_cert] = ssl_cert
+    end
   end
 
   def commands
@@ -195,8 +203,7 @@ class GitIssue::Github < GitIssue::Base
 
     password = options[:password] || get_password(@user)
     opt = {"Authorization" => "Basic " + Base64.encode64("#{@user}:#{password}")}
-
-    opt[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if @sslNoVerify
+    opt.merge!(@ssl_options)
     json = open(url, opt) {|io|
       JSON.parse(io.read)
     }
