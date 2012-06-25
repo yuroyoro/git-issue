@@ -242,7 +242,7 @@ class Redmine < GitIssue::Base
 
 
   def issue_title(issue)
-    "[#{issue['project']['name']}] #{issue['tracker']['name']} ##{issue['id']} #{issue['subject']}"
+    "[#{apply_colors(issue['project']['name'], :green)}] #{apply_colors(issue['tracker']['name'], :yellow)} #{apply_fmt_colors(:id, "##{issue['id']}")} #{issue['subject']}"
   end
 
   def issue_author(issue)
@@ -250,7 +250,7 @@ class Redmine < GitIssue::Base
     created_on = issue['created_on']
     updated_on = issue['updated_on']
 
-    msg = "#{author}が#{time_ago_in_words(created_on)}に追加"
+    msg = "#{apply_fmt_colors(:assigned_to, author)}が#{time_ago_in_words(created_on)}に追加"
     msg += ", #{time_ago_in_words(updated_on)}に更新" unless created_on == updated_on
     msg
   end
@@ -280,13 +280,13 @@ class Redmine < GitIssue::Base
     add_prop = Proc.new{|name|
       title = property_title(name)
       value = issue[name] || ""
-      props << [title, value]
+      props << [title, value, name]
     }
     add_prop_name = Proc.new{|name|
       title = property_title(name)
       value = ''
       value = prop_name.call(name)
-      props << [title, value]
+      props << [title, value, name]
     }
 
     add_prop_name.call('status')
@@ -301,12 +301,13 @@ class Redmine < GitIssue::Base
     # acd custom_fields if it have value.
     if custom_fields = issue[:custom_fields] && custom_fields.reject{|cf| cf['value'].nil? || cf['value'].empty? }
       custom_fields.each do |cf|
-        props << [cf['name'], cf['value']]
+        props << [cf['name'], cf['value'], cf['name']]
       end
     end
 
     props.each_with_index do |p,n|
-      row = sprintf("%s : %s", mljust(p.first, 18), mljust(p.last.to_s, 24))
+      title, value, name = p
+      row = sprintf("%s : %s", mljust(title, 18), apply_fmt_colors(name, mljust(value.to_s, 24)))
       if n % 2 == 0
         msg << row
       else
@@ -371,7 +372,7 @@ class Redmine < GitIssue::Base
   def format_jounal(j, n)
     jnl = []
 
-    jnl << "##{n + 1} - #{j['user']['name']}が#{time_ago_in_words(j['created_on'])}に更新"
+    jnl << "##{n + 1} - #{apply_fmt_colors(:assigned_to, j['user']['name'])}が#{time_ago_in_words(j['created_on'])}に更新"
     jnl << "-" * 78
     j['details'].each do |d|
       log = "#{property_title(d['name'])}を"
@@ -389,7 +390,7 @@ class Redmine < GitIssue::Base
   def format_changesets(changesets)
     cs = []
     changesets.sort_by{|c| c['committed_on'] }.each do |c|
-      cs << "リビジョン: #{c['revision'][0..10]} #{c['user']['name']}が#{time_ago_in_words(c['committed_on'])}に追加"
+      cs << "リビジョン: #{apply_colors(c['revision'][0..10], :cyan)} #{apply_fmt_colors(:assigned_to, c['user']['name'])}が#{time_ago_in_words(c['committed_on'])}に追加"
       cs +=  c['comments'].split("\n").to_a
       cs << ""
     end
@@ -399,7 +400,7 @@ class Redmine < GitIssue::Base
   def format_relations(relations)
     relations.map{|r|
       issue = fetch_issue(r['issue_id'])
-      "#{relations_label(r['relation_type'])} #{issue_title(issue)} #{issue['status']['name']} #{issue['start_date']} "
+      "#{relations_label(r['relation_type'])} #{issue_title(issue)} #{apply_fmt_colors(:status, issue['status']['name'])} #{issue['start_date']} "
     }
   end
 
@@ -448,13 +449,25 @@ class Redmine < GitIssue::Base
       fmt_chars.each do |k, v|
         res.gsub!(/\%(\d*)#{k}/) do |s|
           max = $1.blank? ? max_length[v] : $1.to_i
-          max ? mljust(i[v], max) : i[v]
+          str = max ? mljust(i[v], max) : i[v]
+          colored =  fmt_colors[v] ? apply_fmt_colors(v, str) : str
+          colored
         end
       end
       res
     }
 
     issues.map{|i| format_to.call(i) }
+  end
+
+  def apply_fmt_colors(key, str)
+    fmt_colors[key.to_sym] ? apply_colors(str, *Array(fmt_colors[key.to_sym])) : str
+  end
+
+  def fmt_colors
+    @fmt_colors ||= { :id => [:bold, :cyan], :status => :blue,
+      :priority => :green, :assigned_to => :magenta,
+      :tracker => :yellow}
   end
 
   def output_issues(issues)

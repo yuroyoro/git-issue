@@ -2,6 +2,7 @@
 
 class GitIssue::Base
   include GitIssue::Helper
+  include Term::ANSIColor
 
   attr_reader :apikey, :command, :tickets, :options
   attr_accessor :sysout, :syserr
@@ -251,6 +252,7 @@ class GitIssue::Base
       opts.on("--remote=VALUE",     'on publish, remote repository to push branch ') {|v| @options[:remote] = v}
       opts.on("--onto=VALUE",       'on rebase, start new branch with HEAD equal to "newbase" ') {|v| @options[:onto] = v}
 
+      opts.on("--no-color", "turn off colored output"){@no_color = true }
       opts.on("--debug", "debug print"){@debug= true }
     }
 
@@ -264,6 +266,8 @@ class GitIssue::Base
     @syserr.puts msg
   end
 
-
+  def apply_colors(str, *colors)
+    @no_color.present? ? str : (colors.map(&method(:send)) + [str, reset]).join
+  end
 end
 

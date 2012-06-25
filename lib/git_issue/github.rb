@@ -75,12 +75,12 @@ class GitIssue::Github < GitIssue::Base
     or_zero = lambda{|v| v.blank? ? "0" : v }
 
     issues.each do |i|
-      puts sprintf("#%-4d  %s  %s  %s  %s c:%s v:%s p:%s %s %s",
-                   i['number'].to_i,
-                   i['state'],
+      puts sprintf("%s  %s  %s  %s  %s c:%s v:%s p:%s %s %s",
+                   apply_fmt_colors(:id, sprintf('#%-4d', i['number'].to_i)),
+                   apply_fmt_colors(:state, i['state']),
                    mljust(i['title'], t_max),
-                   mljust(i['user']['login'], u_max),
-                   mljust(i['labels'].map{|l| l['name']}.join(','), l_max),
+                   apply_fmt_colors(:login, mljust(i['user']['login'], u_max)),
+                   apply_fmt_colors(:labels, mljust(i['labels'].map{|l| l['name']}.join(','), l_max)),
                    or_zero.call(i['comments']),
                    or_zero.call(i['votes']),
                    or_zero.call(i['position']),
@@ -349,7 +349,7 @@ class GitIssue::Github < GitIssue::Base
       end
     end
 
-    msg << sprintf("%s : %s", mljust('labels', 18), issue['labels'].map{|l| l['name']}.join(","))
+    msg << sprintf("%s : %s", mljust('labels', 18), apply_fmt_colors(:labels, issue['labels'].map{|l| l['name']}.join(",")))
     msg << sprintf("%s : %s", mljust('html_url', 18), issue['html_url'])
     msg << sprintf("%s : %s", mljust('updated_at', 18), Time.parse(issue['updated_at']))
 
@@ -370,14 +370,14 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def issue_title(issue)
-    "[#{issue['state']}] ##{issue['number']} #{issue['title']}"
+    "[#{apply_fmt_colors(:state, issue['state'])}] #{apply_fmt_colors(:id, "##{issue['number']}")} #{issue['title']}"
   end
 
   def issue_author(issue)
     author     = issue['user']['login']
     created_at = issue['created_at']
 
-    msg = "#{author} opened this issue #{Time.parse(created_at)}"
+    msg = "#{apply_fmt_colors(:login, author)} opened this issue #{Time.parse(created_at)}"
     msg
   end
 
@@ -415,6 +415,15 @@ class GitIssue::Github < GitIssue::Base
     opts.on("--password=VALUE", "For Authorizaion of create/update issue.  Github API v3 doesn't supports API token base authorization for now. then, use Basic Authorizaion instead token." ){|v| @options[:password]}
     opts.on("--sslnoverify", "don't verify SSL"){|v| @options[:sslNoVerify] = true}
     opts
+  end
+
+  def apply_fmt_colors(key, str)
+    fmt_colors[key.to_sym] ? apply_colors(str, *Array(fmt_colors[key.to_sym])) : str
+  end
+
+  def fmt_colors
+    @fmt_colors ||= { :id => [:bold, :cyan], :state => :blue,
+      :login => :magenta, :labels => :yellow}
   end
 
 end

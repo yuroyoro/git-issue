@@ -16,6 +16,7 @@ require 'optparse'
 require 'tempfile'
 require 'active_support/all'
 require 'shellwords'
+require 'term/ansicolor'
 
 module GitIssue
   class Command
