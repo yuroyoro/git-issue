@@ -65,7 +65,7 @@ class GitIssue::Github < GitIssue::Base
 
     url = to_url("repos", @repo, 'issues')
 
-    issues = fetch_json(url, params)
+    issues = fetch_json(url, options, params)
     issues = issues.sort_by{|i| i['number'].to_i} unless params[:sort] || params[:direction]
 
     t_max = issues.map{|i| mlength(i['title'])}.max
@@ -196,17 +196,9 @@ class GitIssue::Github < GitIssue::Base
     URI.join(ROOT, path_list.join("/"))
   end
 
-  def fetch_json(url, params = {})
-    url += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
-
-    puts url if @debug
-
-    password = options[:password] || get_password(@user)
-    opt = {"Authorization" => "Basic " + Base64.encode64("#{@user}:#{password}")}
-    opt.merge!(@ssl_options)
-    json = open(url, opt) {|io|
-      JSON.parse(io.read)
-    }
+  def fetch_json(url, options = {}, params = {})
+    response = send_request(url, {},options, params, :get)
+    json = JSON.parse(response.body)
 
     if @debug
       puts '-' * 80
@@ -220,8 +212,8 @@ class GitIssue::Github < GitIssue::Base
 
   def fetch_issue(ticket_id, params = {})
     url = to_url("repos", @repo, 'issues', ticket_id)
-    url += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
-    json = fetch_json(url)
+    # url += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
+    json = fetch_json(url, {}, params)
 
     issue = json['issue'] || json
     raise "no such issue #{ticket} : #{base}" unless issue
@@ -241,7 +233,7 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def post_json(url, json, options, params = {})
-    response = send_json(url, json, options, params, :post)
+    response = send_request(url, json, options, params, :post)
     json = JSON.parse(response.body)
 
     raise error_message(json) unless response_success?(response)
@@ -249,7 +241,7 @@ class GitIssue::Github < GitIssue::Base
   end
 
   def put_json(url, json, options, params = {})
-    response = send_json(url, json, options, params, :put)
+    response = send_request(url, json, options, params, :put)
     json = JSON.parse(response.body)
 
     raise error_message(json) unless response_success?(response)
@@ -262,7 +254,7 @@ class GitIssue::Github < GitIssue::Base
     msg.join("\n  ")
   end
 
-  def send_json(url, json, options, params = {}, method = :post)
+  def send_request(url, json = {}, options = {}, params = {}, method = :post)
     url = "#{url}"
     uri = URI.parse(url)
 
@@ -275,8 +267,23 @@ class GitIssue::Github < GitIssue::Base
 
     https = Net::HTTP.new(uri.host, uri.port)
     https.use_ssl = true
-    https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    https.verify_mode = @ssl_options[:ssl_verify_mode] || OpenSSL::SSL::VERIFY_NONE
+
+    store = OpenSSL::X509::Store.new
+    if @ssl_options[:ssl_ca_cert].present?
+      if File.directory? @ssl_options[:ssl_ca_cert]
+        store.add_path @ssl_options[:ssl_ca_cert]
+      else
+        store.add_file @ssl_options[:ssl_ca_cert]
+      end
+      http.cert_store = store
+    else
+      store.set_default_paths
+    end
+    https.cert_store = store
+
     https.set_debug_output $stderr if @debug && https.respond_to?(:set_debug_output)
+
     https.start{|http|
 
       path = "#{uri.path}"
@@ -285,6 +292,7 @@ class GitIssue::Github < GitIssue::Base
       request = case method
         when :post then Net::HTTP::Post.new(path)
         when :put  then Net::HTTP::Put.new(path)
+        when :get  then Net::HTTP::Get.new(path)
         else raise "unknown method #{method}"
       end
 
@@ -297,7 +305,7 @@ class GitIssue::Github < GitIssue::Base
       request.basic_auth @user, password
 
       request.set_content_type("application/json")
-      request.body = json.to_json
+      request.body = json.to_json if json.present?
 
       response = http.request(request)
       if @debug
