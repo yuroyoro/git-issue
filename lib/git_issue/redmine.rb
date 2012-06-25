@@ -403,6 +403,8 @@ class Redmine < GitIssue::Base
     }
   end
 
+  DEFAULT_FORMAT = "%I  %S | %A | %s %T %P | %V %C |"
+
   def format_issue_tables(issues_json)
     name_of = lambda{|issue, name| issue[name]['name'] rescue ""}
 
@@ -434,6 +436,8 @@ class Redmine < GitIssue::Base
     }
 
     fmt = configured_value('defaultformat', false)
+    fmt = DEFAULT_FORMAT unless fmt.present?
+
     fmt_chars =  { :I => :id, :S => :subject,
       :A => :assigned_to, :s => :status,  :T => :tracker,
       :P => :priority,    :p => :project, :V => :version,
