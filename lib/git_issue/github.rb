@@ -200,6 +200,8 @@ class GitIssue::Github < GitIssue::Base
     response = send_request(url, {},options, params, :get)
     json = JSON.parse(response.body)
 
+    raise error_message(json) unless response_success?(response)
+
     if @debug
       puts '-' * 80
       puts url
@@ -312,6 +314,7 @@ class GitIssue::Github < GitIssue::Base
         puts "#{response.code}: #{response.msg}"
         puts response.body
       end
+
       response
     }
   end
