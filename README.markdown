@@ -21,7 +21,7 @@ now available issue-tracker system is Redmine and Github-issues.
     $ gem install jeweler
     $ rake install
 
-## Configuration
+## Configuration(Redmine)
 
 set type of issue traking system(redmine or github)
 
@@ -42,6 +42,16 @@ set repository name if using github.
 set your account name if using github.
 
     $ git config issue.user yuroyoro
+
+## Configuration(Github Issues)
+
+set type of issue traking system(redmine or github)
+
+    $ git config issue.type github
+
+set user and password of github(for authentication)
+
+    $ EDITOR=vim pit set github
 
 ## Usage(Redmine)
 
