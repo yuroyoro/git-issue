@@ -6,15 +6,15 @@ class Redmine < GitIssue::Base
   def initialize(args, options = {})
     super(args, options)
 
-    @apikey = options[:apikey] || configured_value('apikey')
+    @apikey = options[:apikey] || configured_value('issue.apikey')
     configure_error('apikey', "git config issue.apikey some_api_key") if @apikey.blank?
 
-    @url = options[:url] || configured_value('url')
+    @url = options[:url] || configured_value('issue.url')
     configure_error('url', "git config issue.url http://example.com/redmine")  if @url.blank?
   end
 
   def default_cmd
-    Helper.configured_value('project').blank? ? :list : :project
+    Helper.configured_value('issue.project').blank? ? :list : :project
   end
 
   def commands
@@ -71,7 +71,7 @@ class Redmine < GitIssue::Base
   def add(options = {})
     property_names = [:project_id, :subject, :description, :done_ratio, :status_id, :priority_id, :tracker_id, :assigned_to_id, :category_id, :fixed_version_id, :notes]
 
-    project_id = options[:project_id] || Helper.configured_value('project')
+    project_id = options[:project_id] || Helper.configured_value('issue.project')
     if options.slice(*property_names).empty?
       issue = read_issue_from_editor({"project" => {"id" => project_id}}, options)
       description = issue.delete(:notes)
@@ -85,7 +85,7 @@ class Redmine < GitIssue::Base
     end
 
     json = build_issue_json(options, property_names)
-    json["issue"][:project_id] ||= Helper.configured_value('project')
+    json["issue"][:project_id] ||= Helper.configured_value('issue.project')
 
     url = to_url('issues')
 
@@ -144,7 +144,7 @@ class Redmine < GitIssue::Base
   end
 
   def project(options = {})
-    project_id = Helper.configured_value('project')
+    project_id = Helper.configured_value('issue.project')
     project_id = options[:ticket_id] if project_id.blank?
     raise 'project_id is required.' unless project_id
     list(options.merge(:query => "project_id=#{project_id}"))
@@ -435,7 +435,7 @@ class Redmine < GitIssue::Base
       :subject => 80
     }
 
-    fmt = configured_value('defaultformat', false)
+    fmt = configured_value('issue.defaultformat', false)
     fmt = DEFAULT_FORMAT unless fmt.present?
 
     fmt_chars =  { :I => :id, :S => :subject,
@@ -490,7 +490,7 @@ class Redmine < GitIssue::Base
   def read_issue_from_editor(issue, options = {})
     id_of = lambda{|name| issue[name] ? sprintf('%2s : %s', issue[name]["id"] , issue[name]['name'] ): ""}
 
-    memofile = configured_value('memofile')
+    memofile = configured_value('issue.memofile')
     memo = File.open(memofile).read.lines.map{|l| "# #{l}"}.join("") unless memofile.blank?
 
     message = <<-MSG

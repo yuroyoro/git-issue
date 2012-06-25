@@ -7,13 +7,13 @@ class GitIssue::Github < GitIssue::Base
   def initialize(args, options = {})
     super(args, options)
 
-    @repo = configured_value('repo')
+    @repo = configured_value('issue.repo')
     if @repo.blank?
       url = `git config remote.origin.url`.strip
       @repo = url.match(/github.com[:\/](.+)\.git/)[1]
     end
 
-    @user = options[:user] || configured_value('user')
+    @user = options[:user] || configured_value('issue.user')
     @user = global_configured_value('github.user') if @user.blank?
     @user = Pit.get("github", :require => {
         "user" => "Your user name in GitHub",

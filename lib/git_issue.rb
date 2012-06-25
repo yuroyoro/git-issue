@@ -39,12 +39,8 @@ module GitIssue
 
 
     def configured_value(name, trim = true)
-      res = `git config issue.#{name}`
+      res = `git config #{name}`
       res = trim ? res.strip : res
-      if res.empty?
-        res = `git config #{name}`
-        res = trim ? res.strip : res
-      end
       res
     end
 
@@ -134,7 +130,7 @@ module GitIssue
     status = true
 
     begin
-      its_type = Helper.configured_value('type')
+      its_type = Helper.configured_value('issue.type')
 
       # Use global config for hub
       if its_type.blank?
