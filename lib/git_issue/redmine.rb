@@ -39,13 +39,29 @@ class Redmine < GitIssue::Base
 
   def list(options = {})
     url = to_url('issues')
-    params = {"limit" => options[:max_count] || 100 }
+    params = {"limit" => options[:max_count] || "100" }
     params.merge!("assigned_to_id" => "me") if options[:mine]
     params.merge!(Hash[*(options[:query].split("&").map{|s| s.split("=") }.flatten)]) if options[:query]
 
-    json = fetch_json(url, params)
+    param_list = Hash[*params.map{|k,v| [k,v.split(/,/)] }.flatten(1)]
+    keys = param_list.keys
+    pl,*pls = param_list.values
 
-    output_issues(json['issues'])
+    jsons = pl.product(*pls).map{|vs| Hash[*keys.zip(vs).flatten]}.map{|p|
+      fetch_json(url, p)['issues']
+    }.flatten
+
+    known_ids = []
+    issues = jsons.reject{|i|
+      known = known_ids.include?(i["id"])
+      known_ids << i['id'] unless known
+      known
+    }
+
+    # json = fetch_json(url, params)
+
+    # output_issues(json['issues'])
+    output_issues(issues)
   end
 
   def mine(options = {})
@@ -573,6 +589,7 @@ MSG
     opts.on("--supperss_changesets", "-c", "do not show issue changesets"){|v| @options[:supperss_changesets] = true}
     opts.on("--query=VALUE",'-q=VALUE', "filter query of listing tickets") {|v| @options[:query] = v}
 
+    opts.on("--mine", "lists issues assigned_to me"){|v| @options[:mine] = true}
     opts.on("--project_id=VALUE", "use the given value to create subject"){|v| @options[:project_id] = v}
     opts.on("--description=VALUE", "use the given value to create subject"){|v| @options[:description] = v}
     opts.on("--subject=VALUE", "use the given value to create/update subject"){|v| @options[:subject] = v}
