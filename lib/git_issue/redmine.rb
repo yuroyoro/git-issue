@@ -136,9 +136,9 @@ class Redmine < GitIssue::Base
 
   def local(option = {})
 
-    brances = %x(git branch).split(/\n/).map{|b| b.scan(/.*ticket\D*(\d+).*/).first }.reject{|r| r.nil?}.map{|r| r.first }
+    brances = %x(git branch).split(/\n/).map{|b| b.scan(/(\d+)/)}.flatten.reject{|r| r.nil? || r.length < 2}
 
-    issues = brances.map{|ticket_id| fetch_issue(ticket_id) }
+    issues = brances.map{|ticket_id| fetch_issue(ticket_id) rescue nil}.compact
 
     output_issues(issues)
   end
@@ -262,7 +262,7 @@ class Redmine < GitIssue::Base
   end
 
   def oneline_issue(issue, options = {})
-    "##{issue['id']} #{issue['subject']}"
+    "#{apply_fmt_colors(:id, "##{issue['id']}")} #{issue['subject']}"
   end
 
   def format_issue(issue, options)
@@ -471,7 +471,12 @@ class Redmine < GitIssue::Base
   end
 
   def output_issues(issues)
-    if options[:raw_id]
+
+    if options[:oneline]
+      issues.each do |i|
+        puts oneline_issue(i, options)
+      end
+    elsif options[:raw_id]
       issues.each do |i|
         puts i['id']
       end
