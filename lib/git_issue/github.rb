@@ -267,7 +267,7 @@ class GitIssue::Github < GitIssue::Base
       puts '-' * 80
     end
 
-    https = Net::HTTP.new(uri.host, uri.port)
+    https = connection(uri.host, uri.port)
     https.use_ssl = true
     https.verify_mode = @ssl_options[:ssl_verify_mode] || OpenSSL::SSL::VERIFY_NONE
 
