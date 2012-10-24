@@ -16,6 +16,7 @@ require 'optparse'
 require 'tempfile'
 require 'active_support/all'
 require 'shellwords'
+require 'win32console' if RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin|cygwin/
 require 'term/ansicolor'
 
 module GitIssue
