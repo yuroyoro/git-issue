@@ -269,5 +269,16 @@ class GitIssue::Base
   def apply_colors(str, *colors)
     @no_color.present? ? str : (colors.map(&method(:send)) + [str, reset]).join
   end
+
+  def connection(host, port)
+    env = ENV['http_proxy'] || ENV['HTTP_PROXY']
+    if env
+      uri = URI(env)
+      proxy_host, proxy_port = uri.host, uri.port
+      Net::HTTP::Proxy(proxy_host, proxy_port).new(host, port)
+    else
+      Net::HTTP.new(host, port)
+    end
+  end
 end
 
