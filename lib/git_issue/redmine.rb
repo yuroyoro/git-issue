@@ -219,7 +219,7 @@ class Redmine < GitIssue::Base
       puts '-' * 80
     end
 
-    http = Net::HTTP.new(uri.host, uri.port)
+    http = connection(uri.host, uri.port)
     if uri.scheme == 'https'
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
