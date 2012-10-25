@@ -1,7 +1,11 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-$KCODE="UTF8" if RUBY_VERSION < '1.9.0'
+if RUBY_VERSION < '1.9.0'
+  $KCODE = "UTF8"
+else
+  Encoding.default_external = Encoding.find('UTF-8')
+end
 
 require 'pp'
 require 'rubygems'
@@ -17,6 +21,8 @@ require 'tempfile'
 require 'active_support/all'
 require 'shellwords'
 require 'term/ansicolor'
+
+Term::ANSIColor::coloring = STDOUT.isatty && RUBY_PLATFORM.downcase !~ /mswin(?!ce)|mingw|bccwin|cygwin/
 
 module GitIssue
   class Command
