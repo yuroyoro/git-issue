@@ -132,7 +132,9 @@ class GitIssue::Base
   end
 
   def current_branch
-    %x(git branch -l | grep "*" | cut -d " " -f 2).strip
+    RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin|cygwin/ ?
+      %x(git branch -l 2> NUL | grep "*" | cut -d " " -f 2).strip :
+      %x(git branch -l 2> /dev/null | grep "*" | cut -d " " -f 2).strip
   end
 
   def guess_ticket
