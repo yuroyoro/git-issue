@@ -151,12 +151,15 @@ class Redmine < GitIssue::Base
   end
 
   def local(option = {})
-
-    brances = %x(git branch).split(/\n/).map{|b| b.scan(/(\d+)/)}.flatten.reject{|r| r.nil? || r.length < 2}
-
-    issues = brances.map{|ticket_id| fetch_issue(ticket_id) rescue nil}.compact
-
-    output_issues(issues)
+    branches = %x(git branch).split(/\n/).select{|b| b.scan(/(\d+)_/).present?}.map{|b| b.gsub(/^(\s+|\*\s+)/, "")}
+    branches.each do |b|
+      puts b
+      issues = b.scan(/(\d+)_/).map{|ticket_id| fetch_issue(ticket_id) rescue nil}.compact
+      issues.each do |i|
+        puts "  #{oneline_issue(i, options)}"
+      end
+      puts ""
+    end
   end
 
   def project(options = {})
