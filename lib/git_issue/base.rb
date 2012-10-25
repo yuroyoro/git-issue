@@ -77,6 +77,33 @@ class GitIssue::Base
     system "git checkout #{cb}"
   end
 
+  def cherry(option = {})
+    upstream = options[:upstream]
+    head = options[:head]
+
+    commits = %x(git cherry -v #{upstream} #{head}).split(/\n/).map{|s|
+      s.scan(/^([+-])\s(\w+)\s(.*)/).first
+    }.select{|_, _, msg| msg =~ /#[0-9]+/ }.map{|diff, sha1, msg|
+      msg.scan(/#([0-9]+)/).flatten.map{|ticket| [diff, sha1, msg, ticket]}
+    }.flatten(1)
+
+    commits.group_by{|d, _, _, n| [d, n]}.each do |k, records|
+      diff, ticket = k
+      c = case diff
+          when "-" then :red
+          when "+" then :green
+      end
+
+      issue = fetch_issue(ticket, options)
+
+      puts "#{apply_colors(diff, c)} #{oneline_issue(issue, options)}"
+      if options[:verbose]
+        records.each {|_, sha1, msg| puts "  #{sha1} #{msg}" }
+        puts ""
+      end
+    end
+  end
+
   def commands
     [
     GitIssue::Command.new(:show,   :s, 'show given issue summary. if given no id,  geuss id from current branch name.'),
@@ -86,6 +113,7 @@ class GitIssue::Base
     GitIssue::Command.new(:add,    :a, 'create issue.'),
     GitIssue::Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
     GitIssue::Command.new(:branch, :b, "checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
+    GitIssue::Command.new(:cherry, :chr, 'find issue not merged upstream.'),
 
     GitIssue::Command.new(:publish,:pub, "push branch to remote repository and set upstream "),
     GitIssue::Command.new(:rebase, :rb,  "rebase branch onto specific newbase"),
@@ -251,6 +279,9 @@ class GitIssue::Base
       opts.on("--raw-id",           "output ticket number only"){|v| @options[:raw_id] = true}
       opts.on("--remote=VALUE",     'on publish, remote repository to push branch ') {|v| @options[:remote] = v}
       opts.on("--onto=VALUE",       'on rebase, start new branch with HEAD equal to "newbase" ') {|v| @options[:onto] = v}
+
+      opts.on("--upstream=VALUE",   'on cherry, upstream branch to compare against. default is tracked remote branch') {|v| @options[:upstream] = v}
+      opts.on("--head=VALUE",       'on cherry, working branch. defaults to HEAD') {|v| @options[:head] = v}
 
       opts.on("--no-color", "turn off colored output"){@no_color = true }
       opts.on("--debug", "debug print"){@debug= true }
