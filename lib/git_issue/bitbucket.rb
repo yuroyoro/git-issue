@@ -297,7 +297,7 @@ class GitIssue::Bitbucket < GitIssue::Base
     https.start{|http|
 
       path = "#{uri.path}"
-      if method == :post then
+      if method == :post or method == :put then
         post_options = options.map{|k,v| "#{k}=#{v}"}.join("&")
       else
         path += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
@@ -317,7 +317,7 @@ class GitIssue::Bitbucket < GitIssue::Base
       if json != nil then
         request.set_content_type("application/json")
         request.body = json.to_json if json.present?
-      elsif method == :post then
+      elsif method == :post or method == :put then
         request.set_content_type("application/x-www-form-urlencoded")
         request.body = post_options
       end
