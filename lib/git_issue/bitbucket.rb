@@ -99,8 +99,6 @@ class GitIssue::Bitbucket < GitIssue::Base
   end
 
   def add(options = {})
-    raise "Not implemented yet."
-
     property_names = [:title, :content, :assignee, :milestone, :labels]
 
     message = <<-MSG
@@ -113,10 +111,9 @@ class GitIssue::Bitbucket < GitIssue::Base
       options[:title], options[:content] = get_title_and_body_from_editor(message)
     end
 
-    json = build_issue_json(options, property_names)
     url = to_url("repositories", @repo, 'issues')
 
-    issue = post_json(url, json, options)
+    issue = post_json(url, nil, options)
     puts "created issue #{oneline_issue(issue)}"
   end
 
@@ -300,7 +297,11 @@ class GitIssue::Bitbucket < GitIssue::Base
     https.start{|http|
 
       path = "#{uri.path}"
-      path += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
+      if method == :post then
+        post_options = options.map{|k,v| "#{k}=#{v}"}.join("&")
+      else
+        path += "?" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
+      end
 
       request = case method
         when :post then Net::HTTP::Post.new(path)
@@ -317,8 +318,14 @@ class GitIssue::Bitbucket < GitIssue::Base
 
       request.basic_auth @user, password
 
-      request.set_content_type("application/json")
-      request.body = json.to_json if json.present?
+      if json != nil then
+        request.set_content_type("application/json")
+        request.body = json.to_json if json.present?
+      elsif method == :post then
+        request.set_content_type("application/x-www-form-urlencoded")
+        request.body = post_options
+      end
+
       response = http.request(request)
       if @debug
         puts "#{response.code}: #{response.msg}"
@@ -382,7 +389,8 @@ class GitIssue::Bitbucket < GitIssue::Base
   end
 
   def issue_title(issue)
-    "[#{apply_fmt_colors(:state, issue['state'])}] #{apply_fmt_colors(:id, "##{issue['number']}")} #{issue['title']}"
+puts issue.inspect
+    "[#{apply_fmt_colors(:state, issue['status'])}] #{apply_fmt_colors(:id, "##{issue['local_id']}")} #{issue['title']}"
   end
 
   def issue_author(issue)
