@@ -56,11 +56,11 @@ class GitIssue::Bitbucket < GitIssue::Base
   end
 
   def list(options = {})
-    state = options[:state] || "open"
+    state = options[:status] || "open"
 
-    query_names = [:state, :milestone, :assignee, :mentioned, :labels, :sort, :direction]
+    query_names = [:status, :milestone, :assignee, :mentioned, :labels, :sort, :direction]
     params = query_names.inject({}){|h,k| h[k] = options[k] if options[k];h}
-    params[:state] ||= "open"
+    params[:status] ||= "open"
     params[:per_page] = options[:max_count] || 30
 
     url = to_url("repositories", @repo, 'issues')
@@ -78,7 +78,7 @@ class GitIssue::Bitbucket < GitIssue::Base
     issues.each do |i|
       puts sprintf("%s  %s  %s  %s  %s c:%s v:%s p:%s %s %s",
                    apply_fmt_colors(:id, sprintf('#%-4d', i['local_id'])),
-                   apply_fmt_colors(:state, i['state']),
+                   apply_fmt_colors(:state, i['status']),
                    mljust(i['title'], t_max),
                    apply_fmt_colors(:login, mljust(i['reported_by']['username'], u_max)),
                    apply_fmt_colors(:labels, mljust(i['metadata']['kind'], l_max)),
@@ -419,7 +419,7 @@ class GitIssue::Bitbucket < GitIssue::Base
     opts.on("--supperss_comments", "-sc", "show issue journals"){|v| @options[:supperss_comments] = true}
     opts.on("--title=VALUE", "Title of issue.Use the given value to create/update issue."){|v| @options[:title] = v}
     opts.on("--body=VALUE", "Body content of issue.Use the given value to create/update issue."){|v| @options[:content] = v}
-    opts.on("--state=VALUE",   "Use the given value to create/update issue. or query of listing issues.Where 'state' is either 'open' or 'closed'"){|v| @options[:states] = v}
+    opts.on("--state=VALUE",   "Use the given value to create/update issue. or query of listing issues.Where 'state' is either 'open' or 'closed'"){|v| @options[:status] = v}
     opts.on("--milestone=VALUE", "Use the given value to create/update issue. or query of listing issues, (Integer Milestone number)"){|v| @options[:milestone] = v }
     opts.on("--assignee=VALUE", "Use the given value to create/update issue. or query of listing issues, (String User login)"){|v| @options[:assignee] = v }
     opts.on("--mentioned=VALUE", "Query of listing issues, (String User login)"){|v| @options[:mentioned] = v }
