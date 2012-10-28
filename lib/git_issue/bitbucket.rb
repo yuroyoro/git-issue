@@ -176,21 +176,22 @@ class GitIssue::Bitbucket < GitIssue::Base
   end
 
   def close(options = {})
-    raise "Not implemented yet."
 
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
 
-    body = options[:body] || get_body_from_editor("### comment here ###")
+    unless options[:content]
+      options[:content] = get_body_from_editor("### comment here ###")
+    end
 
-    json = {:state => 'closed' }
-    url = to_url("repos", @repo, 'issues', ticket)
+    options[:status] = "resolved" unless options[:status]
 
-    issue = post_json(url, json, options)
+    url = to_url("repositories", @repo, 'issues', ticket)
 
-    comment_json = { :body => body }
+    issue = put_json(url, nil, options)
+
     comment_url = to_url("repositories", @repo, 'issues', ticket, 'comments')
-    post_json(comment_url, comment_json, options)
+    post_json(comment_url, nil, options)
 
     puts "closed issue #{oneline_issue(issue)}"
   end
