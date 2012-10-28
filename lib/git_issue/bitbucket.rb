@@ -422,8 +422,8 @@ class GitIssue::Bitbucket < GitIssue::Base
     opts = super
     opts.on("--supperss_comments", "-sc", "show issue journals"){|v| @options[:supperss_comments] = true}
     opts.on("--title=VALUE", "Title of issue.Use the given value to create/update issue."){|v| @options[:title] = v}
-    opts.on("--body=VALUE", "Body content of issue.Use the given value to create/update issue."){|v| @options[:body] = v}
-    opts.on("--state=VALUE",   "Use the given value to create/update issue. or query of listing issues.Where 'state' is either 'open' or 'closed'"){|v| @options[:state] = v}
+    opts.on("--body=VALUE", "Body content of issue.Use the given value to create/update issue."){|v| @options[:content] = v}
+    opts.on("--state=VALUE",   "Use the given value to create/update issue. or query of listing issues.Where 'state' is either 'open' or 'closed'"){|v| @options[:states] = v}
     opts.on("--milestone=VALUE", "Use the given value to create/update issue. or query of listing issues, (Integer Milestone number)"){|v| @options[:milestone] = v }
     opts.on("--assignee=VALUE", "Use the given value to create/update issue. or query of listing issues, (String User login)"){|v| @options[:assignee] = v }
     opts.on("--mentioned=VALUE", "Query of listing issues, (String User login)"){|v| @options[:mentioned] = v }
