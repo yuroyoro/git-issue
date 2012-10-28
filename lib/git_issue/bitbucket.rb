@@ -389,7 +389,7 @@ class GitIssue::Bitbucket < GitIssue::Base
   end
 
   def issue_title(issue)
-puts issue.inspect
+
     "[#{apply_fmt_colors(:state, issue['status'])}] #{apply_fmt_colors(:id, "##{issue['local_id']}")} #{issue['title']}"
   end
 
