@@ -118,40 +118,38 @@ class GitIssue::Bitbucket < GitIssue::Base
   end
 
   def update(options = {})
-    raise "Not implemented yet."
 
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
 
-    property_names = [:title, :body, :assignee, :milestone, :labels, :state]
+    property_names = [:title, :content, :assignee, :milestone, :labels, :status]
 
     if options.slice(*property_names).empty?
       issue = fetch_issue(ticket)
       message = "#{issue['title']}\n\n#{issue['content']}"
-      options[:title], options[:body] = get_title_and_body_from_editor(message)
+      options[:title], options[:content] = get_title_and_body_from_editor(message)
     end
 
-    json = build_issue_json(options, property_names)
     url = to_url("repositories", @repo, 'issues', ticket)
 
-    issue = post_json(url, json, options) # use POST instead of PATCH.
+    issue = put_json(url, nil, options) # use POST instead of PATCH.
     puts "updated issue #{oneline_issue(issue)}"
   end
 
 
   def mention(options = {})
-    raise "Not implemented yet."
 
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
 
-    body = options[:body] || get_body_from_editor("### comment here ###")
-    raise 'comment body is required.' if body.empty?
+    unless options[:content]
+      options[:content] = get_body_from_editor("### comment here ###")
+    end
+    raise 'comment content is required.' unless options[:content]
 
-    json = { :body => body }
-    url = to_url("repos", @repo, 'issues', ticket, 'comments')
+    url = to_url("repositories", @repo, 'issues', ticket, 'comments')
 
-    issue = post_json(url, json, options)
+    issue = post_json(url, nil, options)
 
     issue = fetch_issue(ticket)
     puts "commented issue #{oneline_issue(issue)}"
