@@ -74,8 +74,11 @@ module GitIssue
       editor.shellsplit
     end
 
-    def git_dir
-      `git rev-parse -q --git-dir`.strip
+    def work_dir
+      dir = RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin|cygwin/ ?
+        `git rev-parse -q --git-dir 2> NUL`.strip :
+        `git rev-parse -q --git-dir 2> /dev/null`.strip
+      dir.empty? ? Dir.tmpdir : dir
     end
 
     def split_head_and_body(text)
@@ -95,7 +98,7 @@ module GitIssue
       f = open(file)
       body = f.read
       f.close
-      body.strip
+      body
     end
 
     def get_title_and_body_from_editor(message=nil)
@@ -114,21 +117,25 @@ module GitIssue
     end
 
     def open_editor(message = nil, abort_if_not_modified = true , &block)
-      message_file = File.join(git_dir, 'ISSUE_MESSAGE')
+      message_file = File.join(work_dir, 'ISSUE_MESSAGE')
       File.open(message_file, 'w') { |msg|
         msg.puts message
       }
-      edit_cmd = Array(git_editor).dup
-      edit_cmd << '-c' << 'set ft=gitcommit' if edit_cmd[0] =~ /^[mg]?vim$/
-      edit_cmd << message_file
+	  begin
+        edit_cmd = Array(git_editor).dup
+        edit_cmd << '-c' << 'set ft=gitcommit' if edit_cmd[0] =~ /^[mg]?vim$/
+        edit_cmd << message_file
 
-      system(*edit_cmd)
-      abort "can't open text editor for issue message" unless $?.success?
+        system(*edit_cmd)
+        abort "can't open text editor for issue message" unless $?.success?
 
-      text = read_body(message_file)
-      abort "Aborting cause messages didn't modified." if message == text && abort_if_not_modified
+        text = read_body(message_file)
+        abort "Aborting cause messages didn't modified." if message == text && abort_if_not_modified
+      ensure
+        File.unlink(message_file)
+      end
 
-      yield text
+      yield text.strip
     end
 
     module_function :configured_value, :global_configured_value, :configure_error, :its_klass_of, :get_title_and_body_from_editor, :get_body_from_editor
