@@ -409,7 +409,7 @@ class Redmine < GitIssue::Base
   def format_changesets(changesets)
     cs = []
     changesets.sort_by{|c| c['committed_on'] }.each do |c|
-      cs << "リビジョン: #{apply_colors(c['revision'][0..10], :cyan)} #{apply_fmt_colors(:assigned_to, c['user']['name'])}が#{time_ago_in_words(c['committed_on'])}に追加"
+      cs << "リビジョン: #{apply_colors((c['revision'] || "")[0..10], :cyan)} #{apply_fmt_colors(:assigned_to, (c['user'] || {})['name'])}が#{time_ago_in_words(c['committed_on'])}に追加"
       cs +=  c['comments'].split("\n").to_a
       cs << ""
     end
