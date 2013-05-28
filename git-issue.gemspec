@@ -21,5 +21,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'activesupport'
   s.add_dependency 'pit'
   s.add_dependency 'term-ansicolor'
+  s.add_development_dependency 'rake'
 end
 
