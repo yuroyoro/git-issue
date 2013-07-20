@@ -39,7 +39,8 @@ class Redmine < GitIssue::Base
 
   def list(options = {})
     url = to_url('issues')
-    params = {"limit" => options[:max_count] || "100" }
+    max_count = options[:max_count].to_s if options[:max_count]
+    params = {"limit" => max_count || "100" }
     params.merge!("assigned_to_id" => "me") if options[:mine]
     params.merge!(Hash[*(options[:query].split("&").map{|s| s.split("=") }.flatten)]) if options[:query]
 
