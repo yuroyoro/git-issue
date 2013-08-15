@@ -177,9 +177,17 @@ class Redmine < GitIssue::Base
   end
 
   def fetch_json(url, params = {})
-    url = "#{url}.json?key=#{@apikey}"
+    url_cert = parse_url(url)
+    cert = url_cert[:cert]
+
+    url = "#{url_cert[:url]}.json?key=#{@apikey}"
     url += "&" + params.map{|k,v| "#{k}=#{v}"}.join("&") unless params.empty?
-    json = open(url) {|io| JSON.parse(io.read) }
+
+    option = Hash.new
+    option[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if url.start_with? 'https'
+    option[:http_basic_authentication] = cert unless cert == nil
+
+    json = open(url, option) {|io| JSON.parse(io.read) }
 
     if @debug
       puts '-' * 80
@@ -213,7 +221,10 @@ class Redmine < GitIssue::Base
   end
 
   def send_json(url, json, options, params = {}, method = :post)
-    url = "#{url}.json"
+    url_cert = parse_url(url)
+    cert = url_cert[:cert]
+
+    url = "#{url_cert[:url]}.json"
     uri = URI.parse(url)
 
     if @debug
@@ -239,6 +250,8 @@ class Redmine < GitIssue::Base
         when :put  then Net::HTTP::Put.new(path)
         else raise "unknown method #{method}"
       end
+
+      request.basic_auth cert[0], cert[1] unless cert == nil
 
       request.set_content_type("application/json")
       request.body = json.to_json
@@ -609,6 +622,13 @@ MSG
     opts.on("--notes=VALUE", "add notes to issue"){|v| @options[:notes] = v}
 
     opts
+  end
+
+  def parse_url(url)
+    matches = url.to_s.match(%r{(http|https)://((.*):(.*)@|)(.*)})
+    url = "#{matches[1]}://#{matches[5]}"
+    cert = matches[3] == nil ? nil : matches[3, 2].map{|elem| URI.decode(elem)}
+    {:url => url, :cert => cert}
   end
 end
 end
