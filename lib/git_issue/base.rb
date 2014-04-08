@@ -107,6 +107,7 @@ class GitIssue::Base
   def commands
     [
     GitIssue::Command.new(:show,   :s, 'show given issue summary. if given no id,  geuss id from current branch name.'),
+    GitIssue::Command.new(:view,   :v, 'view issue in browser. if given no id,  geuss id from current branch name.'),
     GitIssue::Command.new(:list,   :l, 'listing issues.'),
     GitIssue::Command.new(:mine,   :m, 'display issues that assigned to you.'),
     GitIssue::Command.new(:commit, :c, 'commit with filling issue subject to messsage.if given no id, geuss id from current branch name.'),
