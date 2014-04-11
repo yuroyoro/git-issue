@@ -37,6 +37,13 @@ class Redmine < GitIssue::Base
     end
   end
 
+  def view(options = {})
+    ticket = options[:ticket_id]
+    raise 'ticket_id is required.' unless ticket
+    url = to_url('issues', ticket)
+    system "git web--browse #{url}"
+  end
+
   def list(options = {})
     url = to_url('issues')
     max_count = options[:max_count].to_s if options[:max_count]

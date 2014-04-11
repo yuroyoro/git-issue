@@ -59,6 +59,7 @@ set user and password of github(for authentication)
 
     Commnads:
       show     s show given issue summary. if given no id,  geuss id from current branch name.
+      view     v view issue in browser. if given no id,  geuss id from current branch name.
       list     l listing issues.
       mine     m display issues that assigned to you.
       commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
@@ -104,6 +105,7 @@ set user and password of github(for authentication)
 
     Commnads:
       show     s show given issue summary. if given no id,  geuss id from current branch name.
+      view     v view issue in browser. if given no id,  geuss id from current branch name.
       list     l listing issues.
       mine     m display issues that assigned to you.
       commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
