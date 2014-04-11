@@ -307,8 +307,8 @@ class GitIssue::Base
     env = ENV['http_proxy'] || ENV['HTTP_PROXY']
     if env
       uri = URI(env)
-      proxy_host, proxy_port = uri.host, uri.port
-      Net::HTTP::Proxy(proxy_host, proxy_port).new(host, port)
+      proxy_host, proxy_port, proxy_user, proxy_pass = uri.host, uri.port, uri.user, uri.password
+      Net::HTTP::Proxy(proxy_host, proxy_port, proxy_user, proxy_pass).new(host, port)
     else
       Net::HTTP.new(host, port)
     end
