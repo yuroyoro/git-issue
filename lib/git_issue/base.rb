@@ -198,7 +198,8 @@ class GitIssue::Base
   def mlength(s)
     width = 0
     cnt = 0
-    s.split(//u).each{|c| cnt += 1 ;width += 1 if c.length > 1 }
+    bytesize_method = (RUBY_VERSION >= "1.9") ? :bytesize : :length
+    s.split(//u).each{|c| cnt += 1 ;width += 1 if c.send(bytesize_method) > 1 }
     cnt + width
   end
 
