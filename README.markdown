@@ -10,7 +10,7 @@ now available issue-tracker system is Redmine and Github-issues.
 <img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue_screenshot-1.png' width='600'/>
 <img src='https://github.com/yuroyoro/git-issue/raw/master/images/git-issue_screenshot-2.png' width='600'/>
 
-## Instration
+## Installation
 
     $ gem install git-issue
 
