@@ -24,6 +24,7 @@ require 'term/ansicolor'
 
 Term::ANSIColor::coloring = STDOUT.isatty && RUBY_PLATFORM.downcase !~ /mswin(?!ce)|mingw|bccwin|cygwin/
 
+
 module GitIssue
   class Command
     attr_reader :name, :short_name, :description
@@ -121,7 +122,7 @@ module GitIssue
       File.open(message_file, 'w') { |msg|
         msg.puts message
       }
-	  begin
+      begin
         edit_cmd = Array(git_editor).dup
         edit_cmd << '-c' << 'set ft=gitcommit' if edit_cmd[0] =~ /^[mg]?vim$/
         edit_cmd << message_file
@@ -179,3 +180,7 @@ require File.dirname(__FILE__) + '/git_issue/base'
 require File.dirname(__FILE__) + '/git_issue/bitbucket'
 require File.dirname(__FILE__) + '/git_issue/github'
 require File.dirname(__FILE__) + '/git_issue/redmine'
+require File.dirname(__FILE__) + '/git_issue/version'
+
+# define version number as global constant for optparse
+Version =  GitIssue::VERSION

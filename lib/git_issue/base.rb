@@ -15,18 +15,36 @@ class GitIssue::Base
     @sysout = options[:sysout] || $stdout
     @syserr = options[:syserr] || $stderr
 
-    split_ticket = lambda{|s| s.nil? || s.empty? ? nil : s.split(/,/).map{|v| v.strip.to_i} }
 
+    parse_command_and_tickets(args)
+  end
+
+  def parse_command_and_tickets(args)
     @tickets = []
+
+    # search "-" options from args
+    @options[:from_stdin] = args.find{|v| v == "-"}
+    args.delete_if{|v| v == "-"}
+
     cmd = args.shift
 
-    if cmd =~ /(\d+,?\s?)+/
-      @tickets = split_ticket.call(cmd)
-      cmd = nil
-    end
+    split_ticket = lambda{|s| s.nil? || s.empty? ? nil : s.split(/,/).map{|v| v.strip.to_i} }
 
-    @tickets += args.map{|s| split_ticket.call(s)}.flatten.uniq
-    @tickets = [guess_ticket].compact if @tickets.empty?
+    if options[:from_stdin]
+      # read tickets from stdin
+      $stdin.each_line do |l|
+        @tickets += split_ticket.call(l)
+      end
+    else
+      # parse args
+      if cmd =~ /(\d+,?\s?)+/
+        @tickets = split_ticket.call(cmd)
+        cmd = nil
+      end
+
+      @tickets += args.map{|s| split_ticket.call(s)}.flatten.uniq
+      @tickets = [guess_ticket].compact if @tickets.empty?
+    end
 
     cmd ||= (@tickets.nil? || @tickets.empty?) ? default_cmd : :show
     cmd = cmd.to_sym
@@ -275,6 +293,8 @@ class GitIssue::Base
   def opt_parser
     OptionParser.new{|opts|
       opts.banner = 'git issue <command> [ticket_id] [<args>]'
+      # Register "-" only to be shown in help. Actualy this definition is not used
+      opts.on("-",            /^$/,    "read ticket-ids from stdin"){ @options[:from_stdin] = true }
       opts.on("--all",        "-a", "update all paths in the index file "){ @options[:all] = true }
       opts.on("--force",      "-f", "force create branch"){ @options[:force] = true }
       opts.on("--verbose",    "-v", "show issue details"){|v| @options[:verbose] = true}
