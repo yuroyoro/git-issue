@@ -65,7 +65,7 @@ set user and password of github(for authentication)
       commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
       add      a create issue.
       update   u update issue properties. if given no id, geuss id from current branch name.
-      branch   b checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)
+      branch   b checkout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)
       publish  pub push branch to remote repository and set upstream
       rebase   rb rebase branch onto specific newbase
       help     h show usage.
@@ -111,7 +111,7 @@ set user and password of github(for authentication)
       commit   c commit with filling issue subject to messsage.if given no id, geuss id from current branch name.
       add      a create issue.
       update   u update issue properties. if given no id, geuss id from current branch name.
-      branch   b checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)
+      branch   b checkout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)
       publish  pub push branch to remote repository and set upstream
       rebase   rb rebase branch onto specific newbase
       help     h show usage.
@@ -138,7 +138,7 @@ set user and password of github(for authentication)
           --sort=VALUE                 Query of listing issues, (created,  updated,  comments,  default: created)
           --direction=VALUE            Query of listing issues, (asc or desc,  default: desc.)
           --since=VALUE                Query of listing issue, (Optional string of a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)
-          --password=VALUE             For Authorizaion of create/update issue.  Github API v3 does'nt supports API token base authorization for now. then, use Basic Authorizaion instead token.
+          --password=VALUE             For Authorizaion of create/update issue.  Github API v3 doesn't supports API token base authorization for now. then, use Basic Authorizaion instead token.
           --sslnoverify                don't verify SSL
 
 ## Copyright

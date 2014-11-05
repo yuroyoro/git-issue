@@ -307,7 +307,7 @@ class GitIssue::Github < GitIssue::Base
 
       # request["Authorizaion"] = "#{@user}/token: #{@apikey}"
       #
-      # Github API v3 does'nt supports API token base authorization for now.
+      # Github API v3 doesn't supports API token base authorization for now.
       # For Authentication, this method use Basic Authorizaion instead token.
       password = options[:password] || get_password(@user)
 
