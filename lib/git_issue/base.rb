@@ -131,7 +131,7 @@ class GitIssue::Base
     GitIssue::Command.new(:commit, :c, 'commit with filling issue subject to messsage.if given no id, geuss id from current branch name.'),
     GitIssue::Command.new(:add,    :a, 'create issue.'),
     GitIssue::Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
-    GitIssue::Command.new(:branch, :b, "checout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
+    GitIssue::Command.new(:branch, :b, "checkout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
     GitIssue::Command.new(:cherry, :chr, 'find issue not merged upstream.'),
 
     GitIssue::Command.new(:publish,:pub, "push branch to remote repository and set upstream "),
