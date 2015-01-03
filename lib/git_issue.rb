@@ -22,7 +22,7 @@ require 'active_support/all'
 require 'shellwords'
 require 'term/ansicolor'
 
-Term::ANSIColor::coloring = STDOUT.isatty && RUBY_PLATFORM.downcase !~ /mswin(?!ce)|mingw|bccwin|cygwin/
+Term::ANSIColor::coloring = STDOUT.isatty && RUBY_PLATFORM.downcase !~ /mswin(?!ce)|mingw|bccwin/
 
 
 module GitIssue
