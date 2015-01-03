@@ -179,7 +179,7 @@ class GitIssue::Base
   end
 
   def current_branch
-    RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin|cygwin/ ?
+    RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin/ ?
       %x(git branch -l 2> NUL | grep "*" | cut -d " " -f 2).strip :
       %x(git branch -l 2> /dev/null | grep "*" | cut -d " " -f 2).strip
   end
