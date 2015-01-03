@@ -22,7 +22,7 @@ require 'active_support/all'
 require 'shellwords'
 require 'term/ansicolor'
 
-Term::ANSIColor::coloring = STDOUT.isatty && RUBY_PLATFORM.downcase !~ /mswin(?!ce)|mingw|bccwin|cygwin/
+Term::ANSIColor::coloring = STDOUT.isatty && RUBY_PLATFORM.downcase !~ /mswin(?!ce)|mingw|bccwin/
 
 
 module GitIssue
@@ -76,7 +76,7 @@ module GitIssue
     end
 
     def work_dir
-      dir = RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin|cygwin/ ?
+      dir = RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin/ ?
         `git rev-parse -q --git-dir 2> NUL`.strip :
         `git rev-parse -q --git-dir 2> /dev/null`.strip
       dir.empty? ? Dir.tmpdir : dir
