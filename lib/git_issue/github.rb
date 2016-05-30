@@ -402,7 +402,7 @@ class GitIssue::Github < GitIssue::Base
   def format_comment(c, n)
     cmts = []
 
-    cmts << "##{n + 1} - #{c['user']['login']}が#{time_ago_in_words(c['created_at'])}に更新"
+    cmts << "##{n + 1} - #{c['user']['login']} commented #{time_ago_in_words(c['created_at'])}"
     cmts << "-" * 78
     cmts +=  c['body'].split("\n").to_a if c['body']
     cmts << ""

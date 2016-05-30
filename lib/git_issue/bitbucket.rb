@@ -407,7 +407,7 @@ class GitIssue::Bitbucket < GitIssue::Base
   def format_comment(c, n)
     cmts = []
 
-    cmts << "##{n + 1} - #{c['author_info']['username']}が#{time_ago_in_words(c['utc_created_on'])}に更新"
+    cmts << "##{n + 1} - #{c['author_info']['username']} commented #{time_ago_in_words(c['created_at'])}"
     cmts << "-" * 78
     cmts +=  c['content'].split("\n").to_a if c['content']
     cmts << ""
