@@ -58,7 +58,7 @@ class GitIssue::Github < GitIssue::Base
   def view(options = {})
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
-    url = URI.join('https://github.com/', [@user, @repo, 'issues', ticket].join("/"))
+    url = URI.join('https://github.com/', [@repo, 'issues', ticket].join("/"))
     system "git web--browse #{url}"
   end
 
