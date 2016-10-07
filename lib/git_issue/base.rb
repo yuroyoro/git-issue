@@ -71,7 +71,7 @@ class GitIssue::Base
 
   def help(options = {})
     puts @opt_parse_obj.banner
-    puts "  Commnads:"
+    puts "  Commands:"
     puts usage
     puts ""
     puts "  Options:"
@@ -147,7 +147,7 @@ class GitIssue::Base
   end
 
   def usage
-    commands.map{|c| "%-8s %s %s" % [c.name, c.short_name, c.description ] }.join("\n")
+    commands.map{|c| "%-8s %-4s %s" % [c.name, c.short_name, c.description ] }.join("\n")
   end
 
   def time_ago_in_words(time)
