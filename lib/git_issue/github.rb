@@ -146,6 +146,21 @@ class GitIssue::Github < GitIssue::Base
     update options.merge(assignee: @user)
   end
 
+  def commit(options = {})
+    ticket = options[:ticket_id]
+    raise 'ticket_id is required.' unless ticket
+
+    issue = fetch_issue(ticket)
+    
+    file = File.open("./commit_msg_#{ticket}", 'w')
+    file.write("Fix ##{ticket} (#{issue['title']})")
+    file.close
+
+    system "git commit --edit #{options[:all] ? '--all' : ''} --file #{file.path}"
+
+    File.unlink file.path if file.path
+  end
+
   def mention(options = {})
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
