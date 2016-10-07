@@ -141,6 +141,10 @@ class GitIssue::Github < GitIssue::Base
     puts "updated issue #{oneline_issue(issue)}"
   end
 
+  def take(options = {})
+    raise 'You don’t need to add assignee' if options.has_key? :assignee
+    update options.merge(assignee: @user)
+  end
 
   def mention(options = {})
     ticket = options[:ticket_id]

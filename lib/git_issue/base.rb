@@ -133,7 +133,7 @@ class GitIssue::Base
     GitIssue::Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
     GitIssue::Command.new(:branch, :b, "checkout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
     GitIssue::Command.new(:cherry, :chr, 'find issue not merged upstream.'),
-
+    GitIssue::Command.new(:take,   :t, 'assign self to an issue.'),
     GitIssue::Command.new(:publish,:pub, "push branch to remote repository and set upstream "),
     GitIssue::Command.new(:rebase, :rb,  "rebase branch onto specific newbase"),
 
