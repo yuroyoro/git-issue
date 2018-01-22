@@ -58,7 +58,7 @@ class GitIssue::Github < GitIssue::Base
   def view(options = {})
     ticket = options[:ticket_id]
     raise 'ticket_id is required.' unless ticket
-    url = URI.join('https://github.com/', [@user, @repo, 'issues', ticket].join("/"))
+    url = URI.join('https://github.com/', [@repo, 'issues', ticket].join("/"))
     system "git web--browse #{url}"
   end
 
@@ -141,6 +141,25 @@ class GitIssue::Github < GitIssue::Base
     puts "updated issue #{oneline_issue(issue)}"
   end
 
+  def take(options = {})
+    raise 'You don’t need to add assignee' if options.has_key? :assignee
+    update options.merge(assignee: @user)
+  end
+
+  def commit(options = {})
+    ticket = options[:ticket_id]
+    raise 'ticket_id is required.' unless ticket
+
+    issue = fetch_issue(ticket)
+    
+    file = File.open("./commit_msg_#{ticket}", 'w')
+    file.write("Fix ##{ticket} (#{issue['title']})")
+    file.close
+
+    system "git commit --edit #{options[:all] ? '--all' : ''} --file #{file.path}"
+
+    File.unlink file.path if file.path
+  end
 
   def mention(options = {})
     ticket = options[:ticket_id]
@@ -402,7 +421,7 @@ class GitIssue::Github < GitIssue::Base
   def format_comment(c, n)
     cmts = []
 
-    cmts << "##{n + 1} - #{c['user']['login']}が#{time_ago_in_words(c['created_at'])}に更新"
+    cmts << "##{n + 1} - #{c['user']['login']} commented #{time_ago_in_words(c['created_at'])}"
     cmts << "-" * 78
     cmts +=  c['body'].split("\n").to_a if c['body']
     cmts << ""

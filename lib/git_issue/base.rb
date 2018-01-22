@@ -71,7 +71,7 @@ class GitIssue::Base
 
   def help(options = {})
     puts @opt_parse_obj.banner
-    puts "  Commnads:"
+    puts "  Commands:"
     puts usage
     puts ""
     puts "  Options:"
@@ -133,7 +133,7 @@ class GitIssue::Base
     GitIssue::Command.new(:update, :u, 'update issue properties. if given no id, geuss id from current branch name.'),
     GitIssue::Command.new(:branch, :b, "checkout to branch using specified issue id. if branch dose'nt exisits, create it. (ex ticket/id/<issue_id>)"),
     GitIssue::Command.new(:cherry, :chr, 'find issue not merged upstream.'),
-
+    GitIssue::Command.new(:take,   :t, 'assign self to an issue.'),
     GitIssue::Command.new(:publish,:pub, "push branch to remote repository and set upstream "),
     GitIssue::Command.new(:rebase, :rb,  "rebase branch onto specific newbase"),
 
@@ -147,7 +147,7 @@ class GitIssue::Base
   end
 
   def usage
-    commands.map{|c| "%-8s %s %s" % [c.name, c.short_name, c.description ] }.join("\n")
+    commands.map{|c| "%-8s %-4s %s" % [c.name, c.short_name, c.description ] }.join("\n")
   end
 
   def time_ago_in_words(time)
@@ -155,15 +155,15 @@ class GitIssue::Base
     a = (Time.now - t).to_i
 
     case a
-      when 0              then return 'just now'
-      when 1..59          then return a.to_s + '秒前'
-      when 60..119        then return '1分前'
-      when 120..3540      then return (a/60).to_i.to_s + '分前'
-      when 3541..7100     then return '1時間前'
-      when 7101..82800    then return ((a+99)/3600).to_i.to_s + '時間前'
-      when 82801..172000  then return '1日前'
-      when 172001..432000 then return ((a+800)/(60*60*24)).to_i.to_s + '日前'
-      else return ((a+800)/(60*60*24)).to_i.to_s + '日前'
+      when 0..5            then return 'just now'
+      when 6..59           then return a.to_s + ' seconds ago'
+      when 60..119         then return 'a minute ago'
+      when 120..3540       then return (a/60).to_i.to_s + ' minutes ago'
+      when 3541..7100      then return 'an hour ago'
+      when 7101..82800     then return ((a+99)/3600).to_i.to_s + ' hours ago'
+      when 82801..172000   then return 'a day ago'
+      when 172001..2592000 then return ((a+800)/(60*60*24)).to_i.to_s + ' days ago'
+      else return t.strftime('on %d %b %Y')
     end
   end
 
@@ -336,4 +336,3 @@ class GitIssue::Base
     end
   end
 end
-

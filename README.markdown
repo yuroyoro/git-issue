@@ -16,7 +16,7 @@ now available issue-tracker system is Redmine and Github-issues.
 
     or
 
-    $ git clone https://github.com/yuroyoro/git-issue.git
+    $ git clone https://github.com/buonomo/git-issue.git
     $ cd git-issue
     $ gem install jeweler
     $ rake install
